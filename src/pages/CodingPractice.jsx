@@ -170,7 +170,7 @@ function CodingPractice() {
         <div className="coding-toolbar-left">
           <button
             type="button"
-            className="ghost-button"
+            className="ghost-button coding-list-toggle"
             onClick={() => setShowProblemList((prev) => !prev)}
           >
             {showProblemList ? 'Hide Problem List' : 'Show Problem List'}

@@ -310,7 +310,13 @@ function MentalMathChallenge() {
             </form>
           )}
 
-          <div className="question-form">
+          <div
+            className={
+              activeSettings.answerMode === 'multiple-choice'
+                ? 'question-form question-actions question-actions-after-choices'
+                : 'question-form question-actions'
+            }
+          >
             <button
               type="button"
               className="ghost-button"

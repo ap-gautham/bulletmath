@@ -23,6 +23,12 @@
   padding: 1rem 1.25rem;
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
 .brand-wrap {
   text-align: left;
 }
@@ -54,7 +60,7 @@
   color: var(--text-soft);
   font-weight: 600;
   padding: 0.55rem 0.8rem;
-  border-radius: 12px;
+  border-radius: 6px;
   border: 1px solid transparent;
   transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
 }
@@ -79,7 +85,7 @@
 .page {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 7px;
   padding: clamp(1.1rem, 2vw, 1.8rem);
   box-shadow: var(--shadow);
 }
@@ -98,7 +104,7 @@
 .hero-card {
   background: linear-gradient(145deg, #12253a 0%, #194771 45%, #2d6b8d 100%);
   color: #e9f6ff;
-  border-radius: 12px;
+  border-radius: 6px;
   padding: 1.35rem;
 }
 
@@ -125,7 +131,7 @@
 
 .track-card {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 5px;
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -155,7 +161,7 @@
 .ghost-button,
 .chip {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 4px;
   padding: 0.58rem 0.9rem;
   background: var(--surface);
   color: var(--text-strong);
@@ -213,7 +219,7 @@
 
 .preset-card {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 5px;
   padding: 0.85rem;
   text-align: left;
   background: var(--surface-alt);
@@ -258,7 +264,7 @@
   align-items: center;
   gap: 0.45rem;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 4px;
   padding: 0.52rem;
   background: var(--surface-alt);
 }
@@ -277,7 +283,7 @@
 .metric-card {
   border: 1px solid var(--border);
   background: var(--surface-alt);
-  border-radius: 10px;
+  border-radius: 5px;
   padding: 0.75rem;
   display: grid;
   gap: 0.15rem;
@@ -295,7 +301,7 @@
 
 .question-card {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 5px;
   padding: 1rem;
   background: var(--surface-alt);
 }
@@ -314,7 +320,7 @@
 
 .format-badge {
   padding: 0.35rem 0.55rem;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 0.78rem;
   font-weight: 700;
   border: 1px solid transparent;
@@ -368,7 +374,7 @@
 
 .choice-button {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 4px;
   padding: 0.65rem;
   background: var(--surface);
   color: var(--text-strong);
@@ -385,7 +391,7 @@
   width: min(280px, 100%);
   border: 1px solid var(--border);
   background: var(--surface);
-  border-radius: 8px;
+  border-radius: 4px;
   padding: 0.62rem 0.72rem;
   color: var(--text-strong);
 }
@@ -400,7 +406,7 @@
   margin-top: 1rem;
   overflow: auto;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 5px;
 }
 
 table {
@@ -434,7 +440,7 @@ th {
 .practice-card {
   margin-top: 1rem;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 5px;
   padding: 1rem;
   background: var(--surface-alt);
 }
@@ -504,6 +510,12 @@ th {
   flex-wrap: wrap;
 }
 
+.coding-list-toggle {
+  width: 152px;
+  min-width: 152px;
+  text-align: center;
+}
+
 .coding-toolbar-left {
   display: flex;
   align-items: center;
@@ -528,7 +540,7 @@ th {
 
 .stopwatch-button {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 5px;
   background: var(--surface);
   color: var(--text-strong);
   padding: 0.55rem 0.7rem;
@@ -577,7 +589,7 @@ th {
 
 .problem-list {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 5px;
   padding: 0.8rem;
   background: var(--surface-alt);
   display: grid;
@@ -608,7 +620,7 @@ th {
 .problem-item {
   border: 1px solid var(--border);
   background: var(--surface);
-  border-radius: 7px;
+  border-radius: 4px;
   padding: 0.58rem;
   cursor: pointer;
   display: grid;
@@ -627,7 +639,7 @@ th {
 
 .editor-wrap {
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 5px;
   padding: 1rem;
   background: var(--surface-alt);
   min-height: 78vh;
@@ -659,7 +671,7 @@ th {
   min-height: 430px;
   background: #102233;
   color: #e8f4ff;
-  border-radius: 10px;
+  border-radius: 5px;
   border: 1px solid #2f5874;
   padding: 0.7rem;
   font-family: var(--mono);
@@ -678,7 +690,7 @@ th {
 .output-box {
   margin: 0.4rem 0 0;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 5px;
   padding: 0.7rem;
   background: #0f2030;
   color: #ecf6ff;
@@ -693,8 +705,31 @@ th {
   border: 1px solid #000;
   text-shadow: none;
   padding: 0.35rem 0.55rem;
-  border-radius: 6px;
+  border-radius: 3px;
   width: fit-content;
+}
+
+.theme-toggle {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 4px;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.theme-toggle-light {
+  color: #a15a00;
+  background: #fff3d1;
+}
+
+.theme-toggle-dark {
+  color: #f2d36f;
+  background: #24384b;
 }
 
 .site-footer {
@@ -744,6 +779,10 @@ th {
     width: 100%;
   }
 
+  .choice-grid + .question-form {
+    margin-top: 1rem;
+  }
+
   .probability-header {
     flex-direction: column;
   }
@@ -768,6 +807,11 @@ th {
 
   .coding-toolbar {
     align-items: stretch;
+  }
+
+  .coding-list-toggle {
+    width: 100%;
+    min-width: 100%;
   }
 
 }

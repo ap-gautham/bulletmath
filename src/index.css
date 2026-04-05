@@ -37,6 +37,19 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+:root[data-theme='dark'] {
+  --bg: #0a141e;
+  --surface: #101f2c;
+  --surface-alt: #132737;
+  --border: #294056;
+  --text-strong: #e6f0f8;
+  --text-soft: #9ab3c8;
+  --brand: #64a4d6;
+  --brand-soft: #8bc2ea;
+  --brand-ghost: #1a3449;
+  --shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
+}
+
 * {
   box-sizing: border-box;
 }
