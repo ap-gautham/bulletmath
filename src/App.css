@@ -194,6 +194,16 @@
   flex-wrap: wrap;
 }
 
+.setup-stack {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.setup-start-button {
+  width: fit-content;
+}
+
 .preset-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -470,6 +480,74 @@ th {
   gap: 1rem;
 }
 
+.coding-toolbar {
+  margin-top: 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.9rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.coding-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.coding-nav-row {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.problem-jump-row-inline {
+  margin: 0;
+}
+
+.stopwatch-button {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text-strong);
+  padding: 0.6rem 0.8rem;
+  display: grid;
+  gap: 0.15rem;
+  min-width: 90px;
+  align-items: center;
+  justify-items: center;
+  cursor: pointer;
+}
+
+.stopwatch-button-active {
+  border-color: var(--brand);
+  background: var(--brand-ghost);
+}
+
+.stopwatch-button-content {
+  display: grid;
+  gap: 0.1rem;
+  justify-items: center;
+}
+
+.stopwatch-emoji {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.stopwatch-line {
+  font-weight: 700;
+  font-size: 0.86rem;
+}
+
+.stopwatch-subline {
+  font-size: 0.72rem;
+  color: var(--text-soft);
+  min-height: 0.9rem;
+}
+
 .coding-grid-list-hidden {
   grid-template-columns: 1fr;
 }
@@ -628,6 +706,10 @@ th {
     justify-content: flex-start;
   }
 
+  .setup-start-button {
+    width: 100%;
+  }
+
   .choice-grid {
     grid-template-columns: 1fr;
   }
@@ -652,6 +734,20 @@ th {
   }
 
   .probability-pager-outside .ghost-button {
+    width: 100%;
+  }
+
+  .coding-toolbar,
+  .coding-toolbar-left,
+  .coding-nav-row {
+    width: 100%;
+  }
+
+  .coding-toolbar {
+    align-items: stretch;
+  }
+
+  .stopwatch-button {
     width: 100%;
   }
 }

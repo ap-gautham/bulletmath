@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { codingProblems, codingProblemsByTopic } from '../data/codingProblems'
 import { getRuntimeState, initPyodide, runPythonSnippet } from '../utils/pyodideRunner'
 
@@ -14,6 +14,12 @@ function CodingPractice() {
   const [showSolution, setShowSolution] = useState(false)
   const [showExpected, setShowExpected] = useState(false)
   const [showProblemList, setShowProblemList] = useState(true)
+  const [stopwatchOn, setStopwatchOn] = useState(false)
+  const [stopwatchSeconds, setStopwatchSeconds] = useState(0)
+
+  const stopwatchLabel = stopwatchOn
+    ? `Time ${String(Math.floor(stopwatchSeconds / 60)).padStart(2, '0')}:${String(stopwatchSeconds % 60).padStart(2, '0')}`
+    : 'Start'
 
   const activeProblem = useMemo(
     () => codingProblems.find((item) => item.id === activeProblemId),
@@ -42,6 +48,18 @@ function CodingPractice() {
     topicProblems.findIndex((item) => item.id === activeProblemId),
   )
 
+  useEffect(() => {
+    if (!stopwatchOn) {
+      return undefined
+    }
+
+    const timer = setInterval(() => {
+      setStopwatchSeconds((prev) => prev + 1)
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [stopwatchOn])
+
   const switchTopic = (topic) => {
     setSelectedTopic(topic)
     const next = codingProblemsByTopic[topic][0]
@@ -57,6 +75,14 @@ function CodingPractice() {
     }
     const clamped = Math.min(Math.max(1, n), topicProblems.length)
     switchProblem(topicProblems[clamped - 1].id)
+  }
+
+  const moveByProblem = (direction) => {
+    const nextIndex = activeIndexInTopic + direction
+    if (nextIndex < 0 || nextIndex >= topicProblems.length) {
+      return
+    }
+    switchProblem(topicProblems[nextIndex].id)
   }
 
   const prepareRuntime = async () => {
@@ -115,12 +141,66 @@ function CodingPractice() {
       </div>
 
       <div className="coding-toolbar">
+        <div className="coding-toolbar-left">
+          <button
+            type="button"
+            className="ghost-button"
+            onClick={() => setShowProblemList((prev) => !prev)}
+          >
+            {showProblemList ? 'Hide Problem List' : 'Show Problem List'}
+          </button>
+
+          <div className="problem-jump-row problem-jump-row-inline">
+            <label htmlFor="problem-number" className="field-label">
+              Problem #
+            </label>
+            <input
+              id="problem-number"
+              className="answer-input"
+              type="number"
+              min="1"
+              max={topicProblems.length}
+              value={activeIndexInTopic + 1}
+              onChange={(event) => jumpToProblem(event.target.value)}
+            />
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className={stopwatchOn ? 'stopwatch-button stopwatch-button-active' : 'stopwatch-button'}
+          onClick={() => {
+            if (stopwatchOn) {
+              setStopwatchOn(false)
+              setStopwatchSeconds(0)
+            } else {
+              setStopwatchSeconds(0)
+              setStopwatchOn(true)
+            }
+          }}
+        >
+          <span className="stopwatch-emoji">⏱</span>
+          <span className="stopwatch-line">{stopwatchLabel}</span>
+          <span className="stopwatch-subline">{stopwatchOn ? '(Stop)' : '(Start)'}</span>
+        </button>
+      </div>
+
+      <div className="coding-nav-row">
         <button
           type="button"
           className="ghost-button"
-          onClick={() => setShowProblemList((prev) => !prev)}
+          onClick={() => moveByProblem(-1)}
+          disabled={activeIndexInTopic === 0}
         >
-          {showProblemList ? 'Hide Problem List' : 'Show Problem List'}
+          ← Previous
+        </button>
+        <button
+          type="button"
+          className="ghost-button"
+          onClick={() => moveByProblem(1)}
+          disabled={activeIndexInTopic === topicProblems.length - 1}
+        >
+          Next →
         </button>
       </div>
 
@@ -152,20 +232,6 @@ function CodingPractice() {
 
         {activeProblem && (
           <article className="editor-wrap">
-            <div className="problem-jump-row">
-              <label htmlFor="problem-number" className="field-label">
-                Problem #
-              </label>
-              <input
-                id="problem-number"
-                className="answer-input"
-                type="number"
-                min="1"
-                max={topicProblems.length}
-                value={activeIndexInTopic + 1}
-                onChange={(event) => jumpToProblem(event.target.value)}
-              />
-            </div>
             <h3>{activeProblem.title}</h3>
             <p>{activeProblem.prompt}</p>
             <button

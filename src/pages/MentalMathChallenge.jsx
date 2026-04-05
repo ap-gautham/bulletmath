@@ -398,105 +398,107 @@ function MentalMathChallenge() {
         </p>
       </div>
 
-      <div className="mode-toggle">
-        <button
-          type="button"
-          className={setupMode === 'preset' ? 'chip chip-active' : 'chip'}
-          onClick={() => setSetupMode('preset')}
-        >
-          Preset Levels
-        </button>
-        <button
-          type="button"
-          className={setupMode === 'custom' ? 'chip chip-active' : 'chip'}
-          onClick={() => setSetupMode('custom')}
-        >
-          Custom Mode
-        </button>
-      </div>
-
-      <div className="mode-toggle">
-        <button
-          type="button"
-          className={answerMode === 'free' ? 'chip chip-active' : 'chip'}
-          onClick={() => setAnswerMode('free')}
-        >
-          Free Mode
-        </button>
-        <button
-          type="button"
-          className={answerMode === 'multiple-choice' ? 'chip chip-active' : 'chip'}
-          onClick={() => setAnswerMode('multiple-choice')}
-        >
-          Multiple Choice
-        </button>
-      </div>
-
-      {setupMode === 'preset' ? (
-        <div className="preset-grid">
-          {Object.entries(levelConfigs).map(([key, config]) => (
-            <button
-              key={key}
-              type="button"
-              className={
-                selectedPreset === key ? 'preset-card preset-active' : 'preset-card'
-              }
-              onClick={() => setSelectedPreset(key)}
-            >
-              <h3>{config.label}</h3>
-              <p>{config.timeLimit}s timer</p>
-              <p>{config.topics.join(', ')}</p>
-            </button>
-          ))}
+      <div className="setup-stack">
+        <div className="mode-toggle">
+          <button
+            type="button"
+            className={setupMode === 'preset' ? 'chip chip-active' : 'chip'}
+            onClick={() => setSetupMode('preset')}
+          >
+            Preset Levels
+          </button>
+          <button
+            type="button"
+            className={setupMode === 'custom' ? 'chip chip-active' : 'chip'}
+            onClick={() => setSetupMode('custom')}
+          >
+            Custom Mode
+          </button>
         </div>
-      ) : (
-        <div className="custom-wrap">
-          <div className="custom-templates">
-            {customTemplates.map((template) => (
+
+        <div className="mode-toggle">
+          <button
+            type="button"
+            className={answerMode === 'free' ? 'chip chip-active' : 'chip'}
+            onClick={() => setAnswerMode('free')}
+          >
+            Free Mode
+          </button>
+          <button
+            type="button"
+            className={answerMode === 'multiple-choice' ? 'chip chip-active' : 'chip'}
+            onClick={() => setAnswerMode('multiple-choice')}
+          >
+            Multiple Choice
+          </button>
+        </div>
+
+        {setupMode === 'preset' ? (
+          <div className="preset-grid">
+            {Object.entries(levelConfigs).map(([key, config]) => (
               <button
+                key={key}
                 type="button"
-                className="chip"
-                key={template.id}
-                onClick={() => applyTemplate(template.id)}
+                className={
+                  selectedPreset === key ? 'preset-card preset-active' : 'preset-card'
+                }
+                onClick={() => setSelectedPreset(key)}
               >
-                {template.label}
+                <h3>{config.label}</h3>
+                <p>{config.timeLimit}s timer</p>
+                <p>{config.topics.join(', ')}</p>
               </button>
             ))}
           </div>
+        ) : (
+          <div className="custom-wrap">
+            <div className="custom-templates">
+              {customTemplates.map((template) => (
+                <button
+                  type="button"
+                  className="chip"
+                  key={template.id}
+                  onClick={() => applyTemplate(template.id)}
+                >
+                  {template.label}
+                </button>
+              ))}
+            </div>
 
-          <label className="field-label" htmlFor="time-limit">
-            Time Limit (seconds)
-          </label>
-          <input
-            id="time-limit"
-            className="answer-input"
-            type="number"
-            min="30"
-            value={customSettings.timeLimit}
-            onChange={(event) =>
-              setCustomSettings((prev) => ({
-                ...prev,
-                timeLimit: Number(event.target.value),
-              }))
-            }
-          />
+            <label className="field-label" htmlFor="time-limit">
+              Time Limit (seconds)
+            </label>
+            <input
+              id="time-limit"
+              className="answer-input"
+              type="number"
+              min="30"
+              value={customSettings.timeLimit}
+              onChange={(event) =>
+                setCustomSettings((prev) => ({
+                  ...prev,
+                  timeLimit: Number(event.target.value),
+                }))
+              }
+            />
 
-          <div className="topic-grid">
-            {topicOptions.map((topic) => (
-              <label key={topic.key} className="topic-option">
-                <input
-                  type="checkbox"
-                  checked={customSettings.topics.includes(topic.key)}
-                  onChange={() => toggleTopic(topic.key)}
-                />
-                <span>{topic.label}</span>
-              </label>
-            ))}
+            <div className="topic-grid">
+              {topicOptions.map((topic) => (
+                <label key={topic.key} className="topic-option">
+                  <input
+                    type="checkbox"
+                    checked={customSettings.topics.includes(topic.key)}
+                    onChange={() => toggleTopic(topic.key)}
+                  />
+                  <span>{topic.label}</span>
+                </label>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      <button type="button" className="button-link" onClick={startChallenge}>
+      <button type="button" className="button-link setup-start-button" onClick={startChallenge}>
         Start Challenge
       </button>
     </section>

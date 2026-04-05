@@ -59,6 +59,10 @@ function ProbabilityPractice() {
     setRevealedSolutions((prev) => new Set(prev).add(activeQuestion.id))
   }
 
+  const stopwatchLabel = stopwatchOn
+    ? `Time ${formatStopwatch(stopwatchSeconds)}`
+    : 'Start'
+
   return (
     <section className="page probability-page">
       <div className="probability-header">
@@ -82,7 +86,11 @@ function ProbabilityPractice() {
             }
           }}
         >
-          {stopwatchOn ? `Stopwatch ${formatStopwatch(stopwatchSeconds)} (Stop)` : 'Start Stopwatch'}
+          <span className="stopwatch-button-content">
+            <span className="stopwatch-emoji">⏱</span>
+            <span className="stopwatch-line">{stopwatchLabel}</span>
+            <span className="stopwatch-subline">{stopwatchOn ? '(Stop)' : '(Start)'}</span>
+          </span>
         </button>
       </div>
 
