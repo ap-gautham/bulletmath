@@ -65,7 +65,15 @@ export const initPyodide = async () => {
   return pyodideInstance
 }
 
-export const runPythonSnippet = async (code) => {
+const readGlobal = (pyodide, name) => {
+  if (!pyodide.globals.has(name)) {
+    return null
+  }
+  const proxy = pyodide.globals.get(name)
+  return tryConvertPyProxy(proxy)
+}
+
+export const runPythonSnippet = async (code, validatorCode = '') => {
   const pyodide = await initPyodide()
   const stdout = []
   const stderr = []
@@ -84,19 +92,25 @@ export const runPythonSnippet = async (code) => {
 
   try {
     await pyodide.runPythonAsync('globals().pop("result", None)')
+    await pyodide.runPythonAsync('globals().pop("__passed", None)')
+    await pyodide.runPythonAsync('globals().pop("__details", None)')
     await pyodide.runPythonAsync(code)
 
-    let result = null
-    if (pyodide.globals.has('result')) {
-      const pyResult = pyodide.globals.get('result')
-      result = tryConvertPyProxy(pyResult)
+    if (validatorCode.trim()) {
+      await pyodide.runPythonAsync(validatorCode)
     }
+
+    const result = readGlobal(pyodide, 'result')
+    const validatorPassed = readGlobal(pyodide, '__passed')
+    const validatorDetails = readGlobal(pyodide, '__details')
 
     return {
       ok: true,
       stdout: stdout.join('\n').trim(),
       stderr: stderr.join('\n').trim(),
       result,
+      validatorPassed,
+      validatorDetails: validatorDetails ?? '',
       error: '',
     }
   } catch (error) {
@@ -105,6 +119,8 @@ export const runPythonSnippet = async (code) => {
       stdout: stdout.join('\n').trim(),
       stderr: stderr.join('\n').trim(),
       result: null,
+      validatorPassed: false,
+      validatorDetails: '',
       error: String(error),
     }
   }

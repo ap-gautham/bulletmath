@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
-import { codingProblems } from '../data/codingProblems'
+import { codingProblems, codingProblemsByTopic } from '../data/codingProblems'
 import { getRuntimeState, initPyodide, runPythonSnippet } from '../utils/pyodideRunner'
+
+const topicOrder = ['sorting', 'regex', 'pandas']
 
 function CodingPractice() {
   const [activeProblemId, setActiveProblemId] = useState(codingProblems[0].id)
@@ -45,8 +47,8 @@ function CodingPractice() {
     setExecution(null)
 
     try {
-      const output = await runPythonSnippet(code)
-      const didPass = output.ok ? activeProblem.validate(output) : false
+      const output = await runPythonSnippet(code, activeProblem.validatorCode)
+      const didPass = output.ok && output.validatorPassed === true
 
       setExecution({
         ...output,
@@ -71,22 +73,27 @@ function CodingPractice() {
       <div className="coding-grid">
         <aside className="problem-list">
           <h3>Problems</h3>
-          {codingProblems.map((problem) => (
-            <button
-              type="button"
-              key={problem.id}
-              className={
-                activeProblemId === problem.id
-                  ? 'problem-item problem-item-active'
-                  : 'problem-item'
-              }
-              onClick={() => switchProblem(problem.id)}
-            >
-              <span>{problem.title}</span>
-              <small>
-                {problem.topic} · {problem.difficulty}
-              </small>
-            </button>
+          {topicOrder.map((topicKey) => (
+            <div key={topicKey} className="problem-group">
+              <h4 className="problem-group-title">{topicKey}</h4>
+              {codingProblemsByTopic[topicKey].map((problem) => (
+                <button
+                  type="button"
+                  key={problem.id}
+                  className={
+                    activeProblemId === problem.id
+                      ? 'problem-item problem-item-active'
+                      : 'problem-item'
+                  }
+                  onClick={() => switchProblem(problem.id)}
+                >
+                  <span>{problem.title}</span>
+                  <small>
+                    {problem.topic} · {problem.difficulty}
+                  </small>
+                </button>
+              ))}
+            </div>
           ))}
         </aside>
 
@@ -145,6 +152,9 @@ function CodingPractice() {
                     {execution.didPass ? 'Pass' : 'Not Yet'}
                   </span>
                 </p>
+                {execution.validatorDetails && !execution.didPass && (
+                  <p className="hint-box">Validator: {execution.validatorDetails}</p>
+                )}
                 <pre className="output-box">
                   <code>
                     {'stdout:\n'}

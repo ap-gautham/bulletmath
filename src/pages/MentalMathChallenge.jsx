@@ -12,26 +12,25 @@ const topicOptions = [
   { key: 'multiplication', label: 'Multiplication' },
   { key: 'division', label: 'Division' },
   { key: 'fractions', label: 'Fractions' },
+  { key: 'fraction-division', label: 'Divide by Fractions' },
   { key: 'decimals', label: 'Decimals' },
-  { key: 'rounding', label: 'Rounding Fractions' },
-  { key: 'probability-numbers', label: 'Probability Numbers' },
+  { key: 'probability-division', label: 'Probability Ratios' },
 ]
 
 const profileDefaults = {
-  minInt: 15,
-  maxInt: 120,
-  minMult: 6,
-  maxMult: 28,
-  maxDivisor: 20,
+  minInt: 100,
+  maxInt: 9999,
+  minMult: 8,
+  maxMult: 55,
+  maxDivisor: 40,
   minDivQuotient: 5,
-  maxDivQuotient: 45,
-  remainderRate: 0.35,
-  decimalPlaces: 3,
+  maxDivQuotient: 120,
+  divisionExactRate: 0.75,
 }
 
 const initialCustomSettings = {
-  timeLimit: 150,
-  topics: ['addition', 'division', 'fractions'],
+  timeLimit: 60,
+  topics: ['addition', 'division', 'fractions', 'probability-division'],
 }
 
 const buildChallengeSettings = (mode, preset, customSettings) => {
@@ -157,8 +156,8 @@ function MentalMathChallenge() {
         <div className="challenge-header">
           <h2>{activeSettings.label} Mental Math</h2>
           <p>
-            Answer quickly. You can type decimals, percentages (like 25%), or
-            fractions (like 3/8).
+            Follow the answer format exactly for each prompt. Only one format is
+            accepted: integer, decimal, or simplified fraction.
           </p>
         </div>
 
@@ -180,6 +179,7 @@ function MentalMathChallenge() {
         <article className="question-card">
           <p className="question-topic">{currentQuestion.topic}</p>
           <h3>{currentQuestion.prompt}</h3>
+          <p className="hint-box">Format: {currentQuestion.inputHint}</p>
           <form
             className="question-form"
             onSubmit={(event) => {
@@ -280,7 +280,7 @@ function MentalMathChallenge() {
         <h2>Quick Mental Math Challenge</h2>
         <p>
           Timed practice for arithmetic speed, probability-style number fluency,
-          fractions, and decimal instincts.
+          fractions, and division reflexes.
         </p>
       </div>
 
