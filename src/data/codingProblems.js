@@ -2,7 +2,7 @@ const makeProblems = (topic, templates) => {
   const difficulties = ['easy', 'easy', 'medium', 'medium', 'hard']
   const problems = []
 
-  for (let i = 0; i < 20; i += 1) {
+  for (let i = 0; i < 50; i += 1) {
     const template = templates[i % templates.length]
     problems.push({
       id: `${topic}-${i + 1}`,

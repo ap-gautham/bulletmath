@@ -85,6 +85,18 @@ const buildDivisionQuestion = (profile) => {
 }
 
 const buildFractionsQuestion = () => {
+  if (Math.random() < 0.35) {
+    const denominator = randomChoice([3, 6, 7, 9, 11, 12, 13])
+    const numerator = randomInt(1, denominator - 1)
+    const decimalPlaces = randomChoice([1, 2])
+    return withDecimalAnswer(
+      'fractions',
+      `${numerator}/${denominator}, give as decimal rounded to ${decimalPlaces} digit${decimalPlaces === 1 ? '' : 's'}`,
+      numerator / denominator,
+      decimalPlaces,
+    )
+  }
+
   const d1 = randomChoice([2, 3, 4, 5, 6, 8, 10, 12])
   const d2 = randomChoice([2, 3, 4, 5, 6, 8, 10, 12])
   const n1 = randomInt(1, d1 - 1)
@@ -129,33 +141,34 @@ const buildDecimalsQuestion = () => {
 }
 
 const buildProbabilityDivisionQuestion = () => {
+  const decimalPlaces = randomChoice([1, 2])
   const style = randomChoice(['dice', 'cards', 'walk'])
 
   if (style === 'dice') {
     const power = randomChoice([2, 3])
-    return withFractionAnswer(
+    return withDecimalAnswer(
       'probability-division',
-      `1 / 6^${power}`,
-      1,
-      6 ** power,
+      `Given 1/6^${power}, write as decimal to exactly ${decimalPlaces} digit${decimalPlaces === 1 ? '' : 's'}.`,
+      1 / (6 ** power),
+      decimalPlaces,
     )
   }
 
   if (style === 'cards') {
-    return withFractionAnswer(
+    return withDecimalAnswer(
       'probability-division',
-      '1 / 52',
-      1,
-      52,
+      `Given 1/52, write as decimal to exactly ${decimalPlaces} digit${decimalPlaces === 1 ? '' : 's'}.`,
+      1 / 52,
+      decimalPlaces,
     )
   }
 
   const steps = randomChoice([4, 5, 6])
-  return withFractionAnswer(
+  return withDecimalAnswer(
     'probability-division',
-    `1 / 2^${steps}`,
-    1,
-    2 ** steps,
+    `Given 1/2^${steps}, write as decimal to exactly ${decimalPlaces} digit${decimalPlaces === 1 ? '' : 's'}.`,
+    1 / (2 ** steps),
+    decimalPlaces,
   )
 }
 

@@ -51,6 +51,19 @@ const buildChallengeSettings = (mode, preset, customSettings) => {
   }
 }
 
+const getFormatMeta = (question) => {
+  if (question.answerKind === 'integer') {
+    return { text: 'Integer', className: 'format-integer' }
+  }
+  if (question.answerKind === 'fraction') {
+    return { text: 'Fraction', className: 'format-fraction' }
+  }
+  if (question.answerKind === 'decimal' && question.decimalPlaces === 1) {
+    return { text: 'Decimal (1dp)', className: 'format-decimal-1' }
+  }
+  return { text: `Decimal (${question.decimalPlaces}dp)`, className: 'format-decimal-2' }
+}
+
 function MentalMathChallenge() {
   const [setupMode, setSetupMode] = useState('preset')
   const [selectedPreset, setSelectedPreset] = useState('easy')
@@ -151,6 +164,8 @@ function MentalMathChallenge() {
   }
 
   if (status === 'running' && currentQuestion && activeSettings) {
+    const formatMeta = getFormatMeta(currentQuestion)
+
     return (
       <section className="page mental-page">
         <div className="challenge-header">
@@ -177,7 +192,12 @@ function MentalMathChallenge() {
         </div>
 
         <article className="question-card">
-          <p className="question-topic">{currentQuestion.topic}</p>
+          <div className="question-head">
+            <p className="question-topic">{currentQuestion.topic}</p>
+            <span className={`format-badge ${formatMeta.className}`}>
+              Format: {formatMeta.text}
+            </span>
+          </div>
           <h3>{currentQuestion.prompt}</h3>
           <p className="hint-box">Format: {currentQuestion.inputHint}</p>
           <form
