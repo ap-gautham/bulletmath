@@ -11,14 +11,11 @@ const topicLabelMap = {
   subtraction: 'Subtraction',
   multiplication: 'Multiplication',
   division: 'Division',
-  fractions: 'Fractions',
-  'simple-fraction': 'Simple Fractions (1/n)',
-  'complex-fraction': 'Complex Fractions',
+  fractions: 'Fractions (Decimals + Ops)',
   combination: 'Combinations (nCr)',
   'fraction-division': 'Divide by Fractions',
   decimals: 'Decimals',
   'probability-division': 'Probability Ratios',
-  'notebook-all': 'Notebook Mix',
 }
 
 const topicOptions = [
@@ -26,27 +23,33 @@ const topicOptions = [
   { key: 'subtraction', label: 'Subtraction' },
   { key: 'multiplication', label: 'Multiplication' },
   { key: 'division', label: 'Division' },
-  { key: 'simple-fraction', label: 'Simple Fractions (1/n)' },
-  { key: 'complex-fraction', label: 'Complex Fractions' },
-  { key: 'combination', label: 'Combinations (nCr)' },
   { key: 'fractions', label: 'Fractions' },
+  { key: 'combination', label: 'Combinations (nCr)' },
   { key: 'fraction-division', label: 'Divide by Fractions' },
   { key: 'decimals', label: 'Decimals' },
   { key: 'probability-division', label: 'Probability Ratios' },
 ]
 
-const notebookModeTopics = {
-  all: ['notebook-all'],
-  simple_fraction: ['simple-fraction'],
-  complex_fraction: ['complex-fraction'],
-  combination: ['combination'],
+const focusModeTopics = {
+  all: [
+    'addition',
+    'subtraction',
+    'multiplication',
+    'division',
+    'fractions',
+    'combination',
+    'fraction-division',
+    'decimals',
+    'probability-division',
+  ],
+  fractions: ['fractions'],
+  combinations: ['combination'],
 }
 
-const notebookModeOptions = [
-  { key: 'all', label: 'All (Notebook Mix)' },
-  { key: 'simple_fraction', label: 'Simple Fraction' },
-  { key: 'complex_fraction', label: 'Complex Fraction' },
-  { key: 'combination', label: 'Combination' },
+const focusModeOptions = [
+  { key: 'all', label: 'All Topics' },
+  { key: 'fractions', label: 'Fractions Focus' },
+  { key: 'combinations', label: 'Combinations Focus' },
   { key: 'custom', label: 'Custom Topics' },
 ]
 
@@ -65,13 +68,13 @@ const initialCustomSettings = {
   timeLimit: 60,
   questionCount: 10,
   sessionType: 'timed',
-  notebookMode: 'all',
-  topics: ['simple-fraction', 'complex-fraction', 'combination'],
+  focusMode: 'all',
+  topics: ['fractions', 'combination'],
 }
 
 const resolveCustomTopics = (customSettings) => {
-  if (customSettings.notebookMode !== 'custom') {
-    return notebookModeTopics[customSettings.notebookMode] || notebookModeTopics.all
+  if (customSettings.focusMode !== 'custom') {
+    return focusModeTopics[customSettings.focusMode] || focusModeTopics.all
   }
 
   if (customSettings.topics.length > 0) {
@@ -87,7 +90,7 @@ const buildChallengeSettings = (mode, preset, customSettings) => {
       ...levelConfigs[preset],
       sessionType: 'timed',
       questionCount: 0,
-      notebookMode: 'custom',
+      focusMode: 'custom',
     }
   }
 
@@ -99,7 +102,7 @@ const buildChallengeSettings = (mode, preset, customSettings) => {
     timeLimit: Math.max(30, Number(customSettings.timeLimit)),
     questionCount: Math.max(1, Number(customSettings.questionCount || 10)),
     sessionType: customSettings.sessionType,
-    notebookMode: customSettings.notebookMode,
+    focusMode: customSettings.focusMode,
     topics: topicPool,
   }
 }
@@ -308,7 +311,7 @@ function MentalMathChallenge() {
       timeLimit: template.timeLimit,
       questionCount: template.questionCount ?? 10,
       sessionType: template.sessionType ?? 'timed',
-      notebookMode: template.notebookMode ?? 'custom',
+      focusMode: template.focusMode ?? 'custom',
       topics: template.topics,
     })
   }
@@ -572,21 +575,21 @@ function MentalMathChallenge() {
               ))}
             </div>
 
-            <label className="field-label">Notebook-style question mode</label>
+            <label className="field-label">Question focus</label>
             <div className="mode-toggle">
-              {notebookModeOptions.map((modeOption) => (
+              {focusModeOptions.map((modeOption) => (
                 <button
                   key={modeOption.key}
                   type="button"
                   className={
-                    customSettings.notebookMode === modeOption.key
+                    customSettings.focusMode === modeOption.key
                       ? 'chip chip-active'
                       : 'chip'
                   }
                   onClick={() =>
                     setCustomSettings((prev) => ({
                       ...prev,
-                      notebookMode: modeOption.key,
+                      focusMode: modeOption.key,
                     }))
                   }
                 >
@@ -667,7 +670,7 @@ function MentalMathChallenge() {
               </>
             )}
 
-            {customSettings.notebookMode === 'custom' ? (
+            {customSettings.focusMode === 'custom' ? (
               <div className="topic-grid">
                 {topicOptions.map((topic) => (
                   <label key={topic.key} className="topic-option">
@@ -681,7 +684,7 @@ function MentalMathChallenge() {
                 ))}
               </div>
             ) : (
-              <p className="hint-box">Topic list follows the selected notebook-style mode.</p>
+              <p className="hint-box">Topics follow the selected focus mode.</p>
             )}
           </div>
         )}
