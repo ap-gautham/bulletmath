@@ -54,7 +54,13 @@ function CodingPractice() {
     }
 
     const timer = setInterval(() => {
-      setStopwatchSeconds((prev) => prev + 1)
+      setStopwatchSeconds((prev) => {
+        if (prev >= 60 * 60) {
+          setStopwatchOn(false)
+          return 60 * 60
+        }
+        return prev + 1
+      })
     }, 1000)
 
     return () => clearInterval(timer)
@@ -185,7 +191,7 @@ function CodingPractice() {
         </button>
       </div>
 
-      <div className="coding-nav-row">
+      <div className="coding-nav-row coding-nav-row-spread">
         <button
           type="button"
           className="ghost-button"
