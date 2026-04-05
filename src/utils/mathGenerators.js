@@ -178,11 +178,12 @@ const buildFractionDecimalComplex = () => {
   const numerator = randomInt(1, Math.max(2, denominator - 1))
   const [n, d] = simplifyFraction(numerator, denominator)
   const value = n / d
+  const decimalPlaces = randomChoice([1, 2])
   return withDecimalAnswer(
     'complex-fraction',
     `${n}/${d}`,
     value,
-    getAdaptiveDecimalPlaces(value),
+    decimalPlaces,
   )
 }
 
@@ -301,34 +302,27 @@ const buildDecimalsQuestion = () => {
 }
 
 const buildProbabilityDivisionQuestion = () => {
-  const style = randomChoice(['dice', 'cards', 'walk'])
+  const style = randomChoice(['dice', 'cards'])
 
   if (style === 'dice') {
-    const power = randomChoice([2, 3])
-    const value = 1 / (6 ** power)
+    const power = randomChoice([1, 2, 3])
+    const index = randomChoice([2, 3, 4, 5, 6])
+    const value = index / (6 ** power)
     return withDecimalAnswer(
       'probability-division',
-      `1/6^${power}`,
+      `${index}/6^${power}`,
       value,
       getAdaptiveDecimalPlaces(value),
     )
   }
 
-  if (style === 'cards') {
-    const value = 1 / 52
-    return withDecimalAnswer(
-      'probability-division',
-      '1/52',
-      value,
-      getAdaptiveDecimalPlaces(value),
-    )
-  }
-
-  const steps = randomChoice([4, 5, 6])
-  const value = 1 / (2 ** steps)
+  const denominator = randomChoice([52, 13])
+  const numerator = randomInt(1, 52)
+  const power = randomChoice([1, 2])
+  const value = numerator / (denominator ** power)
   return withDecimalAnswer(
     'probability-division',
-    `1/2^${steps}`,
+    `${numerator}/${denominator}^${power}`,
     value,
     getAdaptiveDecimalPlaces(value),
   )
