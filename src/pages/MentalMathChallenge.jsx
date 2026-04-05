@@ -44,7 +44,7 @@ const initialCustomSettings = {
   timeLimit: 60,
   questionCount: 10,
   sessionType: 'timed',
-  topics: ['simple-fraction', 'complex-fraction', 'combination'],
+  topics: [],
 }
 
 const resolveCustomTopics = (customSettings) =>
@@ -202,6 +202,8 @@ function MentalMathChallenge() {
   const [choiceOptions, setChoiceOptions] = useState([])
   const [attempted, setAttempted] = useState([])
 
+  const customHasTopics = customSettings.topics.length > 0
+
   const totalCorrect = useMemo(
     () => attempted.filter((item) => item.isCorrect).length,
     [attempted],
@@ -254,6 +256,10 @@ function MentalMathChallenge() {
   }, [currentQuestion, status])
 
   const startChallenge = () => {
+    if (setupMode === 'custom' && !customHasTopics) {
+      return
+    }
+
     const settings = {
       ...buildChallengeSettings(setupMode, selectedPreset, customSettings),
       answerMode,
@@ -640,8 +646,15 @@ function MentalMathChallenge() {
         )}
       </div>
 
-      <button type="button" className="button-link setup-start-button" onClick={startChallenge}>
-        Start Challenge
+      <button
+        type="button"
+        className="button-link setup-start-button"
+        onClick={startChallenge}
+        disabled={setupMode === 'custom' && !customHasTopics}
+      >
+        {setupMode === 'custom' && !customHasTopics
+          ? 'Select at least one topic'
+          : 'Start Challenge'}
       </button>
     </section>
   )

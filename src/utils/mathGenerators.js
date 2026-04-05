@@ -327,10 +327,10 @@ const buildProbabilityDivisionQuestion = () => {
   if (style === 'dice') {
     const power = randomChoice([1, 2, 3])
     const index = randomChoice([2, 3, 4, 5, 6])
-    const value = (index / 6) ** power
+    const value = (1 / index) ** power
     return withDecimalAnswer(
       'probability-division',
-      `(${index}/6)${toSuperscript(power)}`,
+      `(1/${index})${toSuperscript(power)}`,
       value,
       getAdaptiveDecimalPlaces(value),
     )
