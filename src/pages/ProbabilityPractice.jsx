@@ -1,8 +1,14 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   buildRandomSession,
   buildStaticSession,
 } from '../data/probabilityQuestions'
+
+const formatStopwatch = (seconds) => {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+}
 
 function ProbabilityPractice() {
   const [mode, setMode] = useState('static')
@@ -10,6 +16,8 @@ function ProbabilityPractice() {
   const [index, setIndex] = useState(0)
   const [revealedHints, setRevealedHints] = useState(() => new Set())
   const [revealedSolutions, setRevealedSolutions] = useState(() => new Set())
+  const [stopwatchOn, setStopwatchOn] = useState(false)
+  const [stopwatchSeconds, setStopwatchSeconds] = useState(0)
 
   const activeQuestion = sessionQuestions[index]
 
@@ -17,6 +25,17 @@ function ProbabilityPractice() {
     () => `${index + 1} / ${sessionQuestions.length}`,
     [index, sessionQuestions.length],
   )
+
+  useEffect(() => {
+    if (!stopwatchOn) {
+      return undefined
+    }
+
+    const timer = setInterval(() => {
+      setStopwatchSeconds((prev) => prev + 1)
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [stopwatchOn])
 
   const startSession = (sessionMode) => {
     const nextQuestions =
@@ -42,12 +61,29 @@ function ProbabilityPractice() {
 
   return (
     <section className="page probability-page">
-      <div className="page-title-wrap">
-        <h2>Probability Practice</h2>
-        <p>
-          Choose static or random mode. Static uses a curated set in random order;
-          random mode generates fresh variants each session.
-        </p>
+      <div className="probability-header">
+        <div className="page-title-wrap">
+          <h2>Probability Practice</h2>
+          <p>
+            Choose static or random mode. Static uses a curated set in random order;
+            random mode generates fresh variants each session.
+          </p>
+        </div>
+        <button
+          type="button"
+          className={stopwatchOn ? 'chip chip-active' : 'chip'}
+          onClick={() => {
+            if (stopwatchOn) {
+              setStopwatchOn(false)
+              setStopwatchSeconds(0)
+            } else {
+              setStopwatchSeconds(0)
+              setStopwatchOn(true)
+            }
+          }}
+        >
+          {stopwatchOn ? `Stopwatch ${formatStopwatch(stopwatchSeconds)} (Stop)` : 'Start Stopwatch'}
+        </button>
       </div>
 
       <div className="mode-toggle">
@@ -94,27 +130,30 @@ function ProbabilityPractice() {
           <p className="solution-box">Solution: {activeQuestion.solution}</p>
         )}
 
-        <div className="pager-row">
-          <button
-            type="button"
-            className="ghost-button"
-            onClick={() => setIndex((prev) => Math.max(0, prev - 1))}
-            disabled={index === 0}
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            className="ghost-button"
-            onClick={() =>
-              setIndex((prev) => Math.min(sessionQuestions.length - 1, prev + 1))
-            }
-            disabled={index === sessionQuestions.length - 1}
-          >
-            Next
-          </button>
-        </div>
       </article>
+
+      <div className="probability-pager-outside">
+        <button
+          type="button"
+          className="ghost-button"
+          onClick={() => setIndex((prev) => Math.max(0, prev - 1))}
+          disabled={index === 0}
+          aria-label="Previous question"
+        >
+          ← Previous
+        </button>
+        <button
+          type="button"
+          className="ghost-button"
+          onClick={() =>
+            setIndex((prev) => Math.min(sessionQuestions.length - 1, prev + 1))
+          }
+          disabled={index === sessionQuestions.length - 1}
+          aria-label="Next question"
+        >
+          Next →
+        </button>
+      </div>
     </section>
   )
 }

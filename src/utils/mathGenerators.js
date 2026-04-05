@@ -109,12 +109,12 @@ const buildFractionsQuestion = () => {
   if (Math.random() < 0.35) {
     const denominator = randomChoice([3, 6, 7, 9, 11, 12, 13])
     const numerator = randomInt(1, denominator - 1)
-    const decimalPlaces = randomChoice([1, 2])
+    const value = numerator / denominator
     return withDecimalAnswer(
       'fractions',
-      `${numerator}/${denominator}, give as decimal rounded to ${decimalPlaces} digit${decimalPlaces === 1 ? '' : 's'}`,
-      numerator / denominator,
-      decimalPlaces,
+      `${numerator}/${denominator}`,
+      value,
+      getAdaptiveDecimalPlaces(value),
     )
   }
 
@@ -393,7 +393,11 @@ export const checkAnswer = (question, rawInput) => {
 
   if (question.answerKind === 'decimal') {
     const parsed = parseDecimal(input, question.decimalPlaces)
-    return parsed !== null && Math.abs(parsed - question.expectedValue) < 10 ** -(question.decimalPlaces)
+    return (
+      parsed !== null
+      && parsed.toFixed(question.decimalPlaces)
+        === question.expectedValue.toFixed(question.decimalPlaces)
+    )
   }
 
   if (question.answerKind === 'fraction') {

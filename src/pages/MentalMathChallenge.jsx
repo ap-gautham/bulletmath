@@ -64,16 +64,81 @@ const getFormatMeta = (question) => {
   return { text: `Decimal (${question.decimalPlaces}dp)`, className: 'format-decimal-2' }
 }
 
+const shuffle = (items) => {
+  const next = [...items]
+  for (let i = next.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[next[i], next[j]] = [next[j], next[i]]
+  }
+  return next
+}
+
+const buildFractionDistractors = (value) => {
+  const [numText, denText] = value.split('/')
+  const n = Number(numText)
+  const d = Number(denText)
+  return [
+    `${n + 1}/${d}`,
+    `${n - 1 === 0 ? n + 2 : n - 1}/${d}`,
+    `${n}/${d + 1}`,
+    `${n}/${Math.max(2, d - 1)}`,
+    `${n + 2}/${d + 1}`,
+  ].filter((item) => item !== value && !item.includes('/0'))
+}
+
+const buildChoices = (question) => {
+  const correct = question.answerDisplay
+  const distractors = new Set()
+
+  if (question.answerKind === 'integer') {
+    const base = Number(question.expectedValue)
+    ;[1, -1, 2, -2, 5, -5, 10, -10].forEach((offset) => {
+      distractors.add(String(base + offset))
+    })
+  }
+
+  if (question.answerKind === 'decimal') {
+    const places = question.decimalPlaces
+    const base = Number(question.expectedValue)
+    const step = 10 ** -places
+    ;[1, -1, 2, -2, 3, -3, 4, -4].forEach((offset) => {
+      distractors.add((base + (offset * step)).toFixed(places))
+    })
+  }
+
+  if (question.answerKind === 'fraction') {
+    buildFractionDistractors(correct).forEach((item) => distractors.add(item))
+  }
+
+  const wrong = [...distractors].filter((item) => item !== correct)
+  while (wrong.length < 3) {
+    if (question.answerKind === 'fraction') {
+      const [n, d] = correct.split('/').map(Number)
+      wrong.push(`${n + wrong.length + 1}/${d + (wrong.length % 2) + 1}`)
+    } else if (question.answerKind === 'decimal') {
+      const places = question.decimalPlaces
+      const bump = (wrong.length + 5) * (10 ** -places)
+      wrong.push((Number(question.expectedValue) + bump).toFixed(places))
+    } else {
+      wrong.push(String(Number(question.expectedValue) + (wrong.length + 6)))
+    }
+  }
+
+  return shuffle([correct, ...wrong.slice(0, 3)])
+}
+
 function MentalMathChallenge() {
   const [setupMode, setSetupMode] = useState('preset')
   const [selectedPreset, setSelectedPreset] = useState('easy')
   const [customSettings, setCustomSettings] = useState(initialCustomSettings)
+  const [answerMode, setAnswerMode] = useState('free')
 
   const [status, setStatus] = useState('setup')
   const [activeSettings, setActiveSettings] = useState(null)
   const [timeLeft, setTimeLeft] = useState(0)
   const [currentQuestion, setCurrentQuestion] = useState(null)
   const [userInput, setUserInput] = useState('')
+  const [choiceOptions, setChoiceOptions] = useState([])
   const [attempted, setAttempted] = useState([])
 
   const totalCorrect = useMemo(
@@ -108,15 +173,16 @@ function MentalMathChallenge() {
   }, [status])
 
   const startChallenge = () => {
-    const settings = buildChallengeSettings(
-      setupMode,
-      selectedPreset,
-      customSettings,
-    )
+    const settings = {
+      ...buildChallengeSettings(setupMode, selectedPreset, customSettings),
+      answerMode,
+    }
+    const firstQuestion = generateQuestion(settings)
     setActiveSettings(settings)
     setAttempted([])
     setUserInput('')
-    setCurrentQuestion(generateQuestion(settings))
+    setCurrentQuestion(firstQuestion)
+    setChoiceOptions(answerMode === 'multiple-choice' ? buildChoices(firstQuestion) : [])
     setTimeLeft(settings.timeLimit)
     setStatus('running')
   }
@@ -137,7 +203,11 @@ function MentalMathChallenge() {
       },
     ])
 
-    setCurrentQuestion(generateQuestion(activeSettings))
+    const nextQuestion = generateQuestion(activeSettings)
+    setCurrentQuestion(nextQuestion)
+    setChoiceOptions(
+      activeSettings.answerMode === 'multiple-choice' ? buildChoices(nextQuestion) : [],
+    )
     setUserInput('')
   }
 
@@ -175,6 +245,12 @@ function MentalMathChallenge() {
             Follow the answer format exactly for each prompt. Only one format is
             accepted: integer, decimal, or simplified fraction.
           </p>
+          <p>
+            Mode:{' '}
+            {activeSettings.answerMode === 'multiple-choice'
+              ? 'Multiple Choice'
+              : 'Free Answer'}
+          </p>
         </div>
 
         <div className="metric-row">
@@ -196,27 +272,45 @@ function MentalMathChallenge() {
           <p className="question-title">
             {topicLabel}{' '}
             <span className={`format-badge ${formatMeta.className}`}>
-              (Format: {formatMeta.text})
+              Format: {formatMeta.text}
             </span>
           </p>
           <h3>{currentQuestion.prompt}</h3>
-          <form
-            className="question-form"
-            onSubmit={(event) => {
-              event.preventDefault()
-              recordAttempt(userInput)
-            }}
-          >
-            <input
-              value={userInput}
-              onChange={(event) => setUserInput(event.target.value)}
-              placeholder="Type your answer"
-              className="answer-input"
-              autoFocus
-            />
-            <button type="submit" className="button-link">
-              Submit
-            </button>
+          {activeSettings.answerMode === 'multiple-choice' ? (
+            <div className="choice-grid" role="group" aria-label="Multiple choice options">
+              {choiceOptions.map((choice) => (
+                <button
+                  key={choice}
+                  type="button"
+                  className="choice-button"
+                  onClick={() => recordAttempt(choice)}
+                >
+                  {choice}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <form
+              className="question-form"
+              onSubmit={(event) => {
+                event.preventDefault()
+                recordAttempt(userInput)
+              }}
+            >
+              <input
+                value={userInput}
+                onChange={(event) => setUserInput(event.target.value)}
+                placeholder="Type your answer"
+                className="answer-input"
+                autoFocus
+              />
+              <button type="submit" className="button-link">
+                Submit
+              </button>
+            </form>
+          )}
+
+          <div className="question-form">
             <button
               type="button"
               className="ghost-button"
@@ -231,7 +325,7 @@ function MentalMathChallenge() {
             >
               End Test
             </button>
-          </form>
+          </div>
         </article>
       </section>
     )
@@ -318,6 +412,23 @@ function MentalMathChallenge() {
           onClick={() => setSetupMode('custom')}
         >
           Custom Mode
+        </button>
+      </div>
+
+      <div className="mode-toggle">
+        <button
+          type="button"
+          className={answerMode === 'free' ? 'chip chip-active' : 'chip'}
+          onClick={() => setAnswerMode('free')}
+        >
+          Free Mode
+        </button>
+        <button
+          type="button"
+          className={answerMode === 'multiple-choice' ? 'chip chip-active' : 'chip'}
+          onClick={() => setAnswerMode('multiple-choice')}
+        >
+          Multiple Choice
         </button>
       </div>
 
