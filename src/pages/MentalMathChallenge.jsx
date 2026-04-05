@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   checkAnswer,
-  customTemplates,
   generateQuestion,
   levelConfigs,
 } from '../utils/mathGenerators'
@@ -11,9 +10,9 @@ const topicLabelMap = {
   subtraction: 'Subtraction',
   multiplication: 'Multiplication',
   division: 'Division',
-  fractions: 'Fractions (Decimals + Ops)',
+  'simple-fraction': 'Simple Fractions',
+  'complex-fraction': 'Complex Fractions',
   combination: 'Combinations (nCr)',
-  'fraction-division': 'Divide by Fractions',
   decimals: 'Decimals',
   'probability-division': 'Probability Ratios',
 }
@@ -23,34 +22,11 @@ const topicOptions = [
   { key: 'subtraction', label: 'Subtraction' },
   { key: 'multiplication', label: 'Multiplication' },
   { key: 'division', label: 'Division' },
-  { key: 'fractions', label: 'Fractions' },
+  { key: 'simple-fraction', label: 'Simple Fractions' },
+  { key: 'complex-fraction', label: 'Complex Fractions' },
   { key: 'combination', label: 'Combinations (nCr)' },
-  { key: 'fraction-division', label: 'Divide by Fractions' },
   { key: 'decimals', label: 'Decimals' },
   { key: 'probability-division', label: 'Probability Ratios' },
-]
-
-const focusModeTopics = {
-  all: [
-    'addition',
-    'subtraction',
-    'multiplication',
-    'division',
-    'fractions',
-    'combination',
-    'fraction-division',
-    'decimals',
-    'probability-division',
-  ],
-  fractions: ['fractions'],
-  combinations: ['combination'],
-}
-
-const focusModeOptions = [
-  { key: 'all', label: 'All Topics' },
-  { key: 'fractions', label: 'Fractions Focus' },
-  { key: 'combinations', label: 'Combinations Focus' },
-  { key: 'custom', label: 'Custom Topics' },
 ]
 
 const profileDefaults = {
@@ -68,21 +44,11 @@ const initialCustomSettings = {
   timeLimit: 60,
   questionCount: 10,
   sessionType: 'timed',
-  focusMode: 'all',
-  topics: ['fractions', 'combination'],
+  topics: ['simple-fraction', 'complex-fraction', 'combination'],
 }
 
-const resolveCustomTopics = (customSettings) => {
-  if (customSettings.focusMode !== 'custom') {
-    return focusModeTopics[customSettings.focusMode] || focusModeTopics.all
-  }
-
-  if (customSettings.topics.length > 0) {
-    return customSettings.topics
-  }
-
-  return ['addition', 'multiplication']
-}
+const resolveCustomTopics = (customSettings) =>
+  (customSettings.topics.length > 0 ? customSettings.topics : ['addition', 'multiplication'])
 
 const buildChallengeSettings = (mode, preset, customSettings) => {
   if (mode === 'preset') {
@@ -90,7 +56,6 @@ const buildChallengeSettings = (mode, preset, customSettings) => {
       ...levelConfigs[preset],
       sessionType: 'timed',
       questionCount: 0,
-      focusMode: 'custom',
     }
   }
 
@@ -102,7 +67,6 @@ const buildChallengeSettings = (mode, preset, customSettings) => {
     timeLimit: Math.max(30, Number(customSettings.timeLimit)),
     questionCount: Math.max(1, Number(customSettings.questionCount || 10)),
     sessionType: customSettings.sessionType,
-    focusMode: customSettings.focusMode,
     topics: topicPool,
   }
 }
@@ -301,20 +265,6 @@ function MentalMathChallenge() {
     setUserInput('')
   }
 
-  const applyTemplate = (templateId) => {
-    const template = customTemplates.find((item) => item.id === templateId)
-    if (!template) {
-      return
-    }
-
-    setCustomSettings({
-      timeLimit: template.timeLimit,
-      questionCount: template.questionCount ?? 10,
-      sessionType: template.sessionType ?? 'timed',
-      focusMode: template.focusMode ?? 'custom',
-      topics: template.topics,
-    })
-  }
 
   const toggleTopic = (topic) => {
     setCustomSettings((prev) => {
@@ -562,42 +512,6 @@ function MentalMathChallenge() {
           </div>
         ) : (
           <div className="custom-wrap">
-            <div className="custom-templates">
-              {customTemplates.map((template) => (
-                <button
-                  type="button"
-                  className="chip"
-                  key={template.id}
-                  onClick={() => applyTemplate(template.id)}
-                >
-                  {template.label}
-                </button>
-              ))}
-            </div>
-
-            <label className="field-label">Question focus</label>
-            <div className="mode-toggle">
-              {focusModeOptions.map((modeOption) => (
-                <button
-                  key={modeOption.key}
-                  type="button"
-                  className={
-                    customSettings.focusMode === modeOption.key
-                      ? 'chip chip-active'
-                      : 'chip'
-                  }
-                  onClick={() =>
-                    setCustomSettings((prev) => ({
-                      ...prev,
-                      focusMode: modeOption.key,
-                    }))
-                  }
-                >
-                  {modeOption.label}
-                </button>
-              ))}
-            </div>
-
             <label className="field-label">Challenge structure</label>
             <div className="mode-toggle">
               <button
@@ -670,22 +584,18 @@ function MentalMathChallenge() {
               </>
             )}
 
-            {customSettings.focusMode === 'custom' ? (
-              <div className="topic-grid">
-                {topicOptions.map((topic) => (
-                  <label key={topic.key} className="topic-option">
-                    <input
-                      type="checkbox"
-                      checked={customSettings.topics.includes(topic.key)}
-                      onChange={() => toggleTopic(topic.key)}
-                    />
-                    <span>{topic.label}</span>
-                  </label>
-                ))}
-              </div>
-            ) : (
-              <p className="hint-box">Topics follow the selected focus mode.</p>
-            )}
+            <div className="topic-grid">
+              {topicOptions.map((topic) => (
+                <label key={topic.key} className="topic-option">
+                  <input
+                    type="checkbox"
+                    checked={customSettings.topics.includes(topic.key)}
+                    onChange={() => toggleTopic(topic.key)}
+                  />
+                  <span>{topic.label}</span>
+                </label>
+              ))}
+            </div>
           </div>
         )}
       </div>

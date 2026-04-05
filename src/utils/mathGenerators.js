@@ -29,6 +29,8 @@ const fractionDenominators = [
   6,
   36,
   216,
+  52,
+  13,
   6,
   36,
   7,
@@ -145,7 +147,7 @@ const buildFractionDecimalComplex = () => {
   )
 }
 
-const buildFractionOpsQuestion = () => {
+const buildFractionOpsQuestion = (topic) => {
   const d1 = randomChoice([2, 3, 4, 5, 6, 8, 10, 12])
   const d2 = randomChoice([2, 3, 4, 5, 6, 8, 10, 12])
   const n1 = randomInt(1, d1 - 1)
@@ -153,25 +155,14 @@ const buildFractionOpsQuestion = () => {
   const op = randomChoice(['+', '-', '×'])
 
   if (op === '×') {
-    return withFractionAnswer('fractions', `${n1}/${d1} × ${n2}/${d2}`, n1 * n2, d1 * d2)
+    return withFractionAnswer(topic, `${n1}/${d1} × ${n2}/${d2}`, n1 * n2, d1 * d2)
   }
 
   const lcm = (d1 * d2) / gcd(d1, d2)
   const left = (lcm / d1) * n1
   const right = (lcm / d2) * n2
   const num = op === '+' ? left + right : left - right
-  return withFractionAnswer('fractions', `${n1}/${d1} ${op} ${n2}/${d2}`, num, lcm)
-}
-
-const buildFractionsQuestion = () => {
-  const roll = Math.random()
-  if (roll < 0.35) {
-    return buildFractionDecimalSimple()
-  }
-  if (roll < 0.7) {
-    return buildFractionDecimalComplex()
-  }
-  return buildFractionOpsQuestion()
+  return withFractionAnswer(topic, `${n1}/${d1} ${op} ${n2}/${d2}`, num, lcm)
 }
 
 const factorial = (n) => {
@@ -191,16 +182,36 @@ const buildCombinationQuestion = () => {
   return withIntegerAnswer('combination', `${n}C${r}`, factorial(n) / (factorial(r) * factorial(n - r)))
 }
 
-const buildFractionDivisionQuestion = () => {
+const buildFractionDivisionQuestion = (topic, denominatorPool) => {
   const whole = randomInt(2, 20)
-  const numerator = randomChoice([1, 2, 3, 4, 5])
-  const denominator = randomChoice([2, 3, 4, 5, 6, 8])
+  const denominator = randomChoice(denominatorPool)
+  const numerator = randomInt(1, Math.min(5, Math.max(2, denominator - 1)))
   return withFractionAnswer(
-    'fraction-division',
+    topic,
     `${whole} ÷ (${numerator}/${denominator})`,
     whole * denominator,
     numerator,
   )
+}
+
+const buildSimpleFractionQuestion = () => {
+  if (Math.random() < 0.7) {
+    return buildFractionDecimalSimple()
+  }
+
+  return buildFractionDivisionQuestion('simple-fraction', [2, 3, 4, 5, 6, 8])
+}
+
+const buildComplexFractionQuestion = () => {
+  const roll = Math.random()
+  if (roll < 0.45) {
+    return buildFractionDecimalComplex()
+  }
+  if (roll < 0.75) {
+    return buildFractionOpsQuestion('complex-fraction')
+  }
+
+  return buildFractionDivisionQuestion('complex-fraction', fractionDenominators)
 }
 
 const buildDecimalsQuestion = () => {
@@ -274,9 +285,9 @@ const topicBuilders = {
   subtraction: buildSubtractionQuestion,
   multiplication: buildMultiplicationQuestion,
   division: buildDivisionQuestion,
-  fractions: buildFractionsQuestion,
+  'simple-fraction': buildSimpleFractionQuestion,
+  'complex-fraction': buildComplexFractionQuestion,
   combination: buildCombinationQuestion,
-  'fraction-division': buildFractionDivisionQuestion,
   decimals: buildDecimalsQuestion,
   'probability-division': buildProbabilityDivisionQuestion,
 }
@@ -293,7 +304,16 @@ export const levelConfigs = {
     minDivQuotient: 2,
     maxDivQuotient: 40,
     divisionExactRate: 0.95,
-    topics: ['addition', 'subtraction', 'multiplication', 'division'],
+    topics: [
+      'addition',
+      'subtraction',
+      'multiplication',
+      'division',
+      'simple-fraction',
+      'simple-fraction',
+      'simple-fraction',
+      'complex-fraction',
+    ],
   },
   medium: {
     label: 'Medium',
@@ -311,9 +331,11 @@ export const levelConfigs = {
       'subtraction',
       'multiplication',
       'division',
-      'fractions',
+      'simple-fraction',
+      'simple-fraction',
+      'complex-fraction',
+      'complex-fraction',
       'combination',
-      'fraction-division',
       'probability-division',
     ],
   },
@@ -333,9 +355,11 @@ export const levelConfigs = {
       'subtraction',
       'multiplication',
       'division',
-      'fractions',
+      'simple-fraction',
+      'complex-fraction',
+      'complex-fraction',
+      'complex-fraction',
       'combination',
-      'fraction-division',
       'decimals',
       'probability-division',
     ],
@@ -356,9 +380,12 @@ export const levelConfigs = {
       'subtraction',
       'multiplication',
       'division',
-      'fractions',
+      'simple-fraction',
+      'complex-fraction',
+      'complex-fraction',
+      'complex-fraction',
+      'complex-fraction',
       'combination',
-      'fraction-division',
       'decimals',
       'probability-division',
     ],
