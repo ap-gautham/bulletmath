@@ -263,7 +263,6 @@ function CodingPractice() {
                     : 'hint-inline-panel hint-inline-panel-hidden'
                 }
               >
-                <span className="hint-inline-label">Hint</span>
                 <span className="hint-inline-value">{activeProblem.expectedLabel}</span>
               </div>
             </div>
