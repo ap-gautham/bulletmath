@@ -11,7 +11,7 @@ const navItems = [
 function Navbar() {
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('bulletmath-theme')
-    return saved === 'dark' ? 'dark' : 'light'
+    return saved === 'light' ? 'light' : 'dark'
   })
 
   useEffect(() => {

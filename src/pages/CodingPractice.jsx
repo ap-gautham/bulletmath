@@ -3,6 +3,11 @@ import { codingProblems, codingProblemsByTopic } from '../data/codingProblems'
 import { getRuntimeState, initPyodide, runPythonSnippet } from '../utils/pyodideRunner'
 
 const topicOrder = ['sorting', 'regex', 'pandas']
+const topicLabels = {
+  sorting: 'Sorting',
+  regex: 'Regex',
+  pandas: 'Pandas',
+}
 
 function CodingPractice() {
   const [selectedTopic, setSelectedTopic] = useState(topicOrder[0])
@@ -161,7 +166,7 @@ function CodingPractice() {
             className={selectedTopic === topic ? 'chip chip-active' : 'chip'}
             onClick={() => switchTopic(topic)}
           >
-            {topic}
+            {topicLabels[topic]}
           </button>
         ))}
       </div>
@@ -215,7 +220,7 @@ function CodingPractice() {
       <div className={`coding-grid ${showProblemList ? '' : 'coding-grid-list-hidden'}`}>
         {showProblemList && (
           <aside className="problem-list">
-            <h3>{selectedTopic} problems</h3>
+            <h3>{topicLabels[selectedTopic]} Problems</h3>
             <div className="problem-group">
               {topicProblems.map((problem, index) => (
                 <button

@@ -511,9 +511,10 @@ th {
 }
 
 .coding-list-toggle {
-  width: 152px;
-  min-width: 152px;
+  width: 172px;
+  min-width: 172px;
   text-align: center;
+  white-space: nowrap;
 }
 
 .coding-toolbar-left {
@@ -601,6 +602,7 @@ th {
 
 .problem-list h3 {
   margin: 0 0 0.25rem;
+  color: var(--text-strong);
 }
 
 .problem-group {
@@ -625,6 +627,7 @@ th {
   cursor: pointer;
   display: grid;
   text-align: left;
+  color: var(--text-strong);
 }
 
 .problem-item small {
@@ -732,6 +735,10 @@ th {
   background: #24384b;
 }
 
+.question-actions-after-choices {
+  margin-top: 1rem;
+}
+
 .site-footer {
   border-top: 1px solid var(--border);
   padding: 1rem 1.25rem 1.2rem;
@@ -807,11 +814,6 @@ th {
 
   .coding-toolbar {
     align-items: stretch;
-  }
-
-  .coding-list-toggle {
-    width: 100%;
-    min-width: 100%;
   }
 
 }
