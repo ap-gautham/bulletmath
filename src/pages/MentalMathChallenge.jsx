@@ -6,15 +6,48 @@ import {
   levelConfigs,
 } from '../utils/mathGenerators'
 
+const topicLabelMap = {
+  addition: 'Addition',
+  subtraction: 'Subtraction',
+  multiplication: 'Multiplication',
+  division: 'Division',
+  fractions: 'Fractions',
+  'simple-fraction': 'Simple Fractions (1/n)',
+  'complex-fraction': 'Complex Fractions',
+  combination: 'Combinations (nCr)',
+  'fraction-division': 'Divide by Fractions',
+  decimals: 'Decimals',
+  'probability-division': 'Probability Ratios',
+  'notebook-all': 'Notebook Mix',
+}
+
 const topicOptions = [
   { key: 'addition', label: 'Addition' },
   { key: 'subtraction', label: 'Subtraction' },
   { key: 'multiplication', label: 'Multiplication' },
   { key: 'division', label: 'Division' },
+  { key: 'simple-fraction', label: 'Simple Fractions (1/n)' },
+  { key: 'complex-fraction', label: 'Complex Fractions' },
+  { key: 'combination', label: 'Combinations (nCr)' },
   { key: 'fractions', label: 'Fractions' },
   { key: 'fraction-division', label: 'Divide by Fractions' },
   { key: 'decimals', label: 'Decimals' },
   { key: 'probability-division', label: 'Probability Ratios' },
+]
+
+const notebookModeTopics = {
+  all: ['notebook-all'],
+  simple_fraction: ['simple-fraction'],
+  complex_fraction: ['complex-fraction'],
+  combination: ['combination'],
+}
+
+const notebookModeOptions = [
+  { key: 'all', label: 'All (Notebook Mix)' },
+  { key: 'simple_fraction', label: 'Simple Fraction' },
+  { key: 'complex_fraction', label: 'Complex Fraction' },
+  { key: 'combination', label: 'Combination' },
+  { key: 'custom', label: 'Custom Topics' },
 ]
 
 const profileDefaults = {
@@ -30,23 +63,43 @@ const profileDefaults = {
 
 const initialCustomSettings = {
   timeLimit: 60,
-  topics: ['addition', 'division', 'fractions', 'probability-division'],
+  questionCount: 10,
+  sessionType: 'timed',
+  notebookMode: 'all',
+  topics: ['simple-fraction', 'complex-fraction', 'combination'],
+}
+
+const resolveCustomTopics = (customSettings) => {
+  if (customSettings.notebookMode !== 'custom') {
+    return notebookModeTopics[customSettings.notebookMode] || notebookModeTopics.all
+  }
+
+  if (customSettings.topics.length > 0) {
+    return customSettings.topics
+  }
+
+  return ['addition', 'multiplication']
 }
 
 const buildChallengeSettings = (mode, preset, customSettings) => {
   if (mode === 'preset') {
-    return levelConfigs[preset]
+    return {
+      ...levelConfigs[preset],
+      sessionType: 'timed',
+      questionCount: 0,
+      notebookMode: 'custom',
+    }
   }
 
-  const topicPool =
-    customSettings.topics.length > 0
-      ? customSettings.topics
-      : ['addition', 'multiplication']
+  const topicPool = resolveCustomTopics(customSettings)
 
   return {
     label: 'Custom Mode',
     ...profileDefaults,
     timeLimit: Math.max(30, Number(customSettings.timeLimit)),
+    questionCount: Math.max(1, Number(customSettings.questionCount || 10)),
+    sessionType: customSettings.sessionType,
+    notebookMode: customSettings.notebookMode,
     topics: topicPool,
   }
 }
@@ -136,6 +189,7 @@ function MentalMathChallenge() {
   const [status, setStatus] = useState('setup')
   const [activeSettings, setActiveSettings] = useState(null)
   const [timeLeft, setTimeLeft] = useState(0)
+  const [questionElapsedSec, setQuestionElapsedSec] = useState(0)
   const [currentQuestion, setCurrentQuestion] = useState(null)
   const [userInput, setUserInput] = useState('')
   const [choiceOptions, setChoiceOptions] = useState([])
@@ -146,6 +200,14 @@ function MentalMathChallenge() {
     [attempted],
   )
 
+  const averageTime = useMemo(() => {
+    if (attempted.length === 0) {
+      return 0
+    }
+    const total = attempted.reduce((sum, item) => sum + (item.timeTakenSec || 0), 0)
+    return total / attempted.length
+  }, [attempted])
+
   const accuracy = useMemo(() => {
     if (attempted.length === 0) {
       return 0
@@ -154,7 +216,7 @@ function MentalMathChallenge() {
   }, [attempted.length, totalCorrect])
 
   useEffect(() => {
-    if (status !== 'running') {
+    if (status !== 'running' || activeSettings?.sessionType !== 'timed') {
       return undefined
     }
 
@@ -170,7 +232,19 @@ function MentalMathChallenge() {
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [status])
+  }, [activeSettings?.sessionType, status])
+
+  useEffect(() => {
+    if (status !== 'running' || !currentQuestion) {
+      return undefined
+    }
+
+    const ticker = setInterval(() => {
+      setQuestionElapsedSec((prev) => Number((prev + 0.1).toFixed(2)))
+    }, 100)
+
+    return () => clearInterval(ticker)
+  }, [currentQuestion, status])
 
   const startChallenge = () => {
     const settings = {
@@ -182,8 +256,9 @@ function MentalMathChallenge() {
     setAttempted([])
     setUserInput('')
     setCurrentQuestion(firstQuestion)
+    setQuestionElapsedSec(0)
     setChoiceOptions(answerMode === 'multiple-choice' ? buildChoices(firstQuestion) : [])
-    setTimeLeft(settings.timeLimit)
+    setTimeLeft(settings.sessionType === 'timed' ? settings.timeLimit : 0)
     setStatus('running')
   }
 
@@ -193,18 +268,30 @@ function MentalMathChallenge() {
     }
 
     const isCorrect = !wasSkipped && checkAnswer(currentQuestion, answerText)
-    setAttempted((prev) => [
-      ...prev,
-      {
-        prompt: currentQuestion.prompt,
-        userAnswer: wasSkipped ? 'Skipped' : answerText.trim() || 'Blank',
-        correctAnswer: currentQuestion.answerDisplay,
-        isCorrect,
-      },
-    ])
+    const elapsed = questionElapsedSec
+    const nextAttempt = {
+      prompt: currentQuestion.prompt,
+      userAnswer: wasSkipped ? 'Skipped' : answerText.trim() || 'Blank',
+      correctAnswer: currentQuestion.answerDisplay,
+      isCorrect,
+      timeTakenSec: elapsed,
+    }
+    const nextAttempted = [...attempted, nextAttempt]
+    setAttempted(nextAttempted)
+
+    if (
+      activeSettings.sessionType === 'count'
+      && nextAttempted.length >= activeSettings.questionCount
+    ) {
+      setStatus('finished')
+      setCurrentQuestion(null)
+      setChoiceOptions([])
+      return
+    }
 
     const nextQuestion = generateQuestion(activeSettings)
     setCurrentQuestion(nextQuestion)
+    setQuestionElapsedSec(0)
     setChoiceOptions(
       activeSettings.answerMode === 'multiple-choice' ? buildChoices(nextQuestion) : [],
     )
@@ -219,6 +306,9 @@ function MentalMathChallenge() {
 
     setCustomSettings({
       timeLimit: template.timeLimit,
+      questionCount: template.questionCount ?? 10,
+      sessionType: template.sessionType ?? 'timed',
+      notebookMode: template.notebookMode ?? 'custom',
       topics: template.topics,
     })
   }
@@ -255,8 +345,16 @@ function MentalMathChallenge() {
 
         <div className="metric-row">
           <article className="metric-card">
-            <span>Time Left</span>
-            <strong>{timeLeft}s</strong>
+            <span>
+              {activeSettings.sessionType === 'timed'
+                ? 'Time Left'
+                : 'Questions Left'}
+            </span>
+            <strong>
+              {activeSettings.sessionType === 'timed'
+                ? `${timeLeft}s`
+                : Math.max(activeSettings.questionCount - attempted.length, 0)}
+            </strong>
           </article>
           <article className="metric-card">
             <span>Attempted</span>
@@ -345,6 +443,7 @@ function MentalMathChallenge() {
           <p>
             Score: {totalCorrect}/{attempted.length} ({accuracy}% accuracy)
           </p>
+          <p>Average response time: {averageTime.toFixed(2)}s per question</p>
         </div>
 
         <div className="table-wrap">
@@ -355,6 +454,7 @@ function MentalMathChallenge() {
                 <th>Question</th>
                 <th>Your Answer</th>
                 <th>Correct Answer</th>
+                <th>Time</th>
                 <th>Result</th>
               </tr>
             </thead>
@@ -365,6 +465,7 @@ function MentalMathChallenge() {
                   <td>{entry.prompt}</td>
                   <td>{entry.userAnswer}</td>
                   <td>{entry.correctAnswer}</td>
+                  <td>{entry.timeTakenSec.toFixed(2)}s</td>
                   <td>
                     <span
                       className={entry.isCorrect ? 'status-ok' : 'status-miss'}
@@ -452,7 +553,7 @@ function MentalMathChallenge() {
               >
                 <h3>{config.label}</h3>
                 <p>{config.timeLimit}s timer</p>
-                <p>{config.topics.join(', ')}</p>
+                <p>{config.topics.map((topic) => topicLabelMap[topic] || topic).join(', ')}</p>
               </button>
             ))}
           </div>
@@ -471,35 +572,117 @@ function MentalMathChallenge() {
               ))}
             </div>
 
-            <label className="field-label" htmlFor="time-limit">
-              Time Limit (seconds)
-            </label>
-            <input
-              id="time-limit"
-              className="answer-input"
-              type="number"
-              min="30"
-              value={customSettings.timeLimit}
-              onChange={(event) =>
-                setCustomSettings((prev) => ({
-                  ...prev,
-                  timeLimit: Number(event.target.value),
-                }))
-              }
-            />
-
-            <div className="topic-grid">
-              {topicOptions.map((topic) => (
-                <label key={topic.key} className="topic-option">
-                  <input
-                    type="checkbox"
-                    checked={customSettings.topics.includes(topic.key)}
-                    onChange={() => toggleTopic(topic.key)}
-                  />
-                  <span>{topic.label}</span>
-                </label>
+            <label className="field-label">Notebook-style question mode</label>
+            <div className="mode-toggle">
+              {notebookModeOptions.map((modeOption) => (
+                <button
+                  key={modeOption.key}
+                  type="button"
+                  className={
+                    customSettings.notebookMode === modeOption.key
+                      ? 'chip chip-active'
+                      : 'chip'
+                  }
+                  onClick={() =>
+                    setCustomSettings((prev) => ({
+                      ...prev,
+                      notebookMode: modeOption.key,
+                    }))
+                  }
+                >
+                  {modeOption.label}
+                </button>
               ))}
             </div>
+
+            <label className="field-label">Challenge structure</label>
+            <div className="mode-toggle">
+              <button
+                type="button"
+                className={
+                  customSettings.sessionType === 'timed' ? 'chip chip-active' : 'chip'
+                }
+                onClick={() =>
+                  setCustomSettings((prev) => ({
+                    ...prev,
+                    sessionType: 'timed',
+                  }))
+                }
+              >
+                Timed Session
+              </button>
+              <button
+                type="button"
+                className={
+                  customSettings.sessionType === 'count' ? 'chip chip-active' : 'chip'
+                }
+                onClick={() =>
+                  setCustomSettings((prev) => ({
+                    ...prev,
+                    sessionType: 'count',
+                  }))
+                }
+              >
+                Fixed Question Count
+              </button>
+            </div>
+
+            {customSettings.sessionType === 'timed' ? (
+              <>
+                <label className="field-label" htmlFor="time-limit">
+                  Time Limit (seconds)
+                </label>
+                <input
+                  id="time-limit"
+                  className="answer-input"
+                  type="number"
+                  min="30"
+                  value={customSettings.timeLimit}
+                  onChange={(event) =>
+                    setCustomSettings((prev) => ({
+                      ...prev,
+                      timeLimit: Number(event.target.value),
+                    }))
+                  }
+                />
+              </>
+            ) : (
+              <>
+                <label className="field-label" htmlFor="question-count">
+                  Number of Questions
+                </label>
+                <input
+                  id="question-count"
+                  className="answer-input"
+                  type="number"
+                  min="1"
+                  value={customSettings.questionCount}
+                  onChange={(event) =>
+                    setCustomSettings((prev) => ({
+                      ...prev,
+                      questionCount: Number(event.target.value),
+                    }))
+                  }
+                />
+              </>
+            )}
+
+            {customSettings.notebookMode === 'custom' ? (
+              <div className="topic-grid">
+                {topicOptions.map((topic) => (
+                  <label key={topic.key} className="topic-option">
+                    <input
+                      type="checkbox"
+                      checked={customSettings.topics.includes(topic.key)}
+                      onChange={() => toggleTopic(topic.key)}
+                    />
+                    <span>{topic.label}</span>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <p className="hint-box">Topic list follows the selected notebook-style mode.</p>
+            )}
           </div>
         )}
       </div>

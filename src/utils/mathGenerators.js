@@ -18,6 +18,22 @@ const randomInt = (min, max) =>
 
 const randomChoice = (list) => list[Math.floor(Math.random() * list.length)]
 
+const notebookDenominators = [
+  ...Array.from({ length: 14 }, (_, index) => index + 2),
+  4,
+  16,
+  64,
+  9,
+  27,
+  81,
+  6,
+  36,
+  216,
+  6,
+  36,
+  7,
+]
+
 const getAdaptiveDecimalPlaces = (value) => {
   const abs = Math.abs(value)
   if (abs >= 1) {
@@ -135,6 +151,63 @@ const buildFractionsQuestion = () => {
   return withFractionAnswer('fractions', `${n1}/${d1} ${op} ${n2}/${d2}`, num, lcm)
 }
 
+const buildSimpleFractionQuestion = () => {
+  const denominator = randomChoice([3, 4, 5, 6, 7, 8, 9, 11, 12, 13])
+  const value = 1 / denominator
+  return withDecimalAnswer(
+    'simple-fraction',
+    `1/${denominator}`,
+    value,
+    getAdaptiveDecimalPlaces(value),
+  )
+}
+
+const buildComplexFractionQuestion = () => {
+  const denominator = randomChoice(notebookDenominators)
+  const numerator = randomInt(1, Math.max(2, denominator - 1))
+  const [n, d] = simplifyFraction(numerator, denominator)
+  const value = n / d
+  return withDecimalAnswer(
+    'complex-fraction',
+    `${n}/${d}`,
+    value,
+    getAdaptiveDecimalPlaces(value),
+  )
+}
+
+const buildCombinationQuestion = () => {
+  const n = randomInt(5, 15)
+  const r = randomInt(2, Math.min(5, n - 1))
+  return withIntegerAnswer('combination', `${n}C${r}`, Math.round(factorial(n) / (factorial(r) * factorial(n - r))))
+}
+
+const buildNotebookAllQuestion = () => {
+  const questionType = randomChoice([
+    'simple-fraction',
+    'complex-fraction',
+    'combination',
+  ])
+
+  if (questionType === 'simple-fraction') {
+    return buildSimpleFractionQuestion()
+  }
+  if (questionType === 'complex-fraction') {
+    return buildComplexFractionQuestion()
+  }
+  return buildCombinationQuestion()
+}
+
+const factorial = (n) => {
+  if (n <= 1) {
+    return 1
+  }
+  let total = 1
+  for (let i = 2; i <= n; i += 1) {
+    total *= i
+  }
+  return total
+}
+
 const buildFractionDivisionQuestion = () => {
   const whole = randomInt(2, 20)
   const numerator = randomChoice([1, 2, 3, 4, 5])
@@ -219,6 +292,10 @@ const topicBuilders = {
   multiplication: buildMultiplicationQuestion,
   division: buildDivisionQuestion,
   fractions: buildFractionsQuestion,
+  'simple-fraction': buildSimpleFractionQuestion,
+  'complex-fraction': buildComplexFractionQuestion,
+  combination: buildCombinationQuestion,
+  'notebook-all': buildNotebookAllQuestion,
   'fraction-division': buildFractionDivisionQuestion,
   decimals: buildDecimalsQuestion,
   'probability-division': buildProbabilityDivisionQuestion,
@@ -254,6 +331,9 @@ export const levelConfigs = {
       'subtraction',
       'multiplication',
       'division',
+      'simple-fraction',
+      'complex-fraction',
+      'combination',
       'fractions',
       'fraction-division',
       'probability-division',
@@ -275,6 +355,9 @@ export const levelConfigs = {
       'subtraction',
       'multiplication',
       'division',
+      'simple-fraction',
+      'complex-fraction',
+      'combination',
       'fractions',
       'fraction-division',
       'decimals',
@@ -297,6 +380,9 @@ export const levelConfigs = {
       'subtraction',
       'multiplication',
       'division',
+      'simple-fraction',
+      'complex-fraction',
+      'combination',
       'fractions',
       'fraction-division',
       'decimals',
@@ -310,34 +396,58 @@ export const customTemplates = [
     id: 'speed-core',
     label: 'Speed Core',
     timeLimit: 60,
+    sessionType: 'timed',
+    questionCount: 10,
+    notebookMode: 'custom',
     topics: ['addition', 'subtraction', 'multiplication'],
   },
   {
     id: 'fraction-reflex',
     label: 'Fraction Reflex',
     timeLimit: 60,
-    topics: ['fractions', 'fraction-division', 'probability-division'],
+    sessionType: 'timed',
+    questionCount: 10,
+    notebookMode: 'all',
+    topics: ['simple-fraction', 'complex-fraction', 'combination'],
   },
   {
     id: 'probability-drill',
     label: 'Probability Division Drill',
     timeLimit: 60,
+    sessionType: 'timed',
+    questionCount: 10,
+    notebookMode: 'custom',
     topics: ['probability-division', 'division', 'decimals'],
   },
   {
     id: 'quant-mix',
     label: 'Quant Mix',
     timeLimit: 60,
+    sessionType: 'timed',
+    questionCount: 12,
+    notebookMode: 'all',
     topics: [
       'addition',
       'subtraction',
       'multiplication',
       'division',
+      'simple-fraction',
+      'complex-fraction',
+      'combination',
       'fractions',
       'fraction-division',
       'decimals',
       'probability-division',
     ],
+  },
+  {
+    id: 'notebook-fractions',
+    label: 'Notebook Fractions',
+    timeLimit: 60,
+    sessionType: 'count',
+    questionCount: 10,
+    notebookMode: 'all',
+    topics: ['simple-fraction', 'complex-fraction', 'combination'],
   },
 ]
 
