@@ -60,7 +60,7 @@ function ProbabilityPractice() {
   }
 
   const stopwatchLabel = stopwatchOn
-    ? `Time ${formatStopwatch(stopwatchSeconds)}`
+    ? formatStopwatch(stopwatchSeconds)
     : 'Start'
 
   return (
@@ -75,7 +75,7 @@ function ProbabilityPractice() {
         </div>
         <button
           type="button"
-          className={stopwatchOn ? 'chip chip-active' : 'chip'}
+          className={stopwatchOn ? 'stopwatch-button stopwatch-button-active' : 'stopwatch-button'}
           onClick={() => {
             if (stopwatchOn) {
               setStopwatchOn(false)

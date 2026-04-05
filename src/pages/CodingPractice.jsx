@@ -18,7 +18,7 @@ function CodingPractice() {
   const [stopwatchSeconds, setStopwatchSeconds] = useState(0)
 
   const stopwatchLabel = stopwatchOn
-    ? `Time ${String(Math.floor(stopwatchSeconds / 60)).padStart(2, '0')}:${String(stopwatchSeconds % 60).padStart(2, '0')}`
+    ? `${String(Math.floor(stopwatchSeconds / 60)).padStart(2, '0')}:${String(stopwatchSeconds % 60).padStart(2, '0')}`
     : 'Start'
 
   const activeProblem = useMemo(
@@ -125,12 +125,32 @@ function CodingPractice() {
 
   return (
     <section className="page coding-page">
-      <div className="page-title-wrap">
-        <h2>Coding Practice Lab</h2>
-        <p>
-          Solve concept-first Python tasks on sorting, regex, and pandas. Run code
-          directly in-browser with Pyodide.
-        </p>
+      <div className="coding-header">
+        <div className="page-title-wrap">
+          <h2>Coding Practice Lab</h2>
+          <p>
+            Solve concept-first Python tasks on sorting, regex, and pandas. Run code
+            directly in-browser with Pyodide.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className={stopwatchOn ? 'stopwatch-button stopwatch-button-active' : 'stopwatch-button'}
+          onClick={() => {
+            if (stopwatchOn) {
+              setStopwatchOn(false)
+              setStopwatchSeconds(0)
+            } else {
+              setStopwatchSeconds(0)
+              setStopwatchOn(true)
+            }
+          }}
+        >
+          <span className="stopwatch-emoji">⏱</span>
+          <span className="stopwatch-line">{stopwatchLabel}</span>
+          <span className="stopwatch-subline">{stopwatchOn ? '(Stop)' : '(Start)'}</span>
+        </button>
       </div>
 
       <div className="mode-toggle">
@@ -171,24 +191,6 @@ function CodingPractice() {
             />
           </div>
         </div>
-
-        <button
-          type="button"
-          className={stopwatchOn ? 'stopwatch-button stopwatch-button-active' : 'stopwatch-button'}
-          onClick={() => {
-            if (stopwatchOn) {
-              setStopwatchOn(false)
-              setStopwatchSeconds(0)
-            } else {
-              setStopwatchSeconds(0)
-              setStopwatchOn(true)
-            }
-          }}
-        >
-          <span className="stopwatch-emoji">⏱</span>
-          <span className="stopwatch-line">{stopwatchLabel}</span>
-          <span className="stopwatch-subline">{stopwatchOn ? '(Stop)' : '(Start)'}</span>
-        </button>
       </div>
 
       <div className="coding-nav-row coding-nav-row-spread">
