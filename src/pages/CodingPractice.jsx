@@ -247,17 +247,26 @@ function CodingPractice() {
           <article className="editor-wrap">
             <h3>{activeProblem.title}</h3>
             <p>{activeProblem.prompt}</p>
-            <button
-              type="button"
-              className="ghost-button"
-              onClick={() => setShowExpected(true)}
-              disabled={showExpected}
-            >
-              {showExpected ? 'Hint Shown' : 'Give me a hint'}
-            </button>
-            <p className={showExpected ? 'expected-output' : 'expected-output expected-hidden'}>
-              Expected shape: {activeProblem.expectedLabel}
-            </p>
+            <div className="hint-inline-row">
+              <button
+                type="button"
+                className="ghost-button hint-inline-button"
+                onClick={() => setShowExpected(true)}
+                disabled={showExpected}
+              >
+                Give me a hint
+              </button>
+              <div
+                className={
+                  showExpected
+                    ? 'hint-inline-panel hint-inline-panel-visible'
+                    : 'hint-inline-panel hint-inline-panel-hidden'
+                }
+              >
+                <span className="hint-inline-label">Hint</span>
+                <span className="hint-inline-value">{activeProblem.expectedLabel}</span>
+              </div>
+            </div>
 
             <textarea
               className="code-editor"

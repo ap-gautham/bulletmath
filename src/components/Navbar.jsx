@@ -51,7 +51,7 @@ function Navbar() {
           </nav>
           <button
             type="button"
-            className={theme === 'light' ? 'theme-toggle theme-toggle-light' : 'theme-toggle theme-toggle-dark'}
+            className="theme-toggle theme-toggle-dark"
             onClick={toggleTheme}
             title={`Switch to ${switchTarget} mode`}
             aria-label={`Switch to ${switchTarget} mode`}
