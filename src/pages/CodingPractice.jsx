@@ -13,6 +13,7 @@ function CodingPractice() {
   const [isRunning, setIsRunning] = useState(false)
   const [showSolution, setShowSolution] = useState(false)
   const [showExpected, setShowExpected] = useState(false)
+  const [showProblemList, setShowProblemList] = useState(true)
 
   const activeProblem = useMemo(
     () => codingProblems.find((item) => item.id === activeProblemId),
@@ -113,29 +114,41 @@ function CodingPractice() {
         ))}
       </div>
 
-      <div className="coding-grid">
-        <aside className="problem-list">
-          <h3>{selectedTopic} problems</h3>
-          <div className="problem-group">
-            {topicProblems.map((problem, index) => (
-              <button
-                type="button"
-                key={problem.id}
-                className={
-                  activeProblemId === problem.id
-                    ? 'problem-item problem-item-active'
-                    : 'problem-item'
-                }
-                onClick={() => switchProblem(problem.id)}
-              >
-                <span>
-                  {index + 1}. {problem.title}
-                </span>
-                <small>{problem.difficulty}</small>
-              </button>
-            ))}
-          </div>
-        </aside>
+      <div className="coding-toolbar">
+        <button
+          type="button"
+          className="ghost-button"
+          onClick={() => setShowProblemList((prev) => !prev)}
+        >
+          {showProblemList ? 'Hide Problem List' : 'Show Problem List'}
+        </button>
+      </div>
+
+      <div className={`coding-grid ${showProblemList ? '' : 'coding-grid-list-hidden'}`}>
+        {showProblemList && (
+          <aside className="problem-list">
+            <h3>{selectedTopic} problems</h3>
+            <div className="problem-group">
+              {topicProblems.map((problem, index) => (
+                <button
+                  type="button"
+                  key={problem.id}
+                  className={
+                    activeProblemId === problem.id
+                      ? 'problem-item problem-item-active'
+                      : 'problem-item'
+                  }
+                  onClick={() => switchProblem(problem.id)}
+                >
+                  <span>
+                    {index + 1}. {problem.title}
+                  </span>
+                  <small>{problem.difficulty}</small>
+                </button>
+              ))}
+            </div>
+          </aside>
+        )}
 
         {activeProblem && (
           <article className="editor-wrap">

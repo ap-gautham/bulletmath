@@ -18,6 +18,21 @@ const randomInt = (min, max) =>
 
 const randomChoice = (list) => list[Math.floor(Math.random() * list.length)]
 
+const getAdaptiveDecimalPlaces = (value) => {
+  const abs = Math.abs(value)
+  if (abs >= 1) {
+    return 1
+  }
+
+  const fractional = abs.toFixed(8).split('.')[1] || ''
+  const firstNonZeroIndex = fractional.search(/[1-9]/)
+  if (firstNonZeroIndex === -1) {
+    return 1
+  }
+
+  return Math.min(firstNonZeroIndex + 1, 6)
+}
+
 const withIntegerAnswer = (topic, prompt, value) => ({
   topic,
   prompt,
@@ -81,7 +96,13 @@ const buildDivisionQuestion = (profile) => {
   const quotient = randomInt(profile.minDivQuotient, profile.maxDivQuotient)
   const remainder = randomInt(1, divisor - 1)
   const dividend = divisor * quotient + remainder
-  return withDecimalAnswer('division', `${dividend} / ${divisor}`, dividend / divisor, 2)
+  const value = dividend / divisor
+  return withDecimalAnswer(
+    'division',
+    `${dividend} / ${divisor}`,
+    value,
+    getAdaptiveDecimalPlaces(value),
+  )
 }
 
 const buildFractionsQuestion = () => {
@@ -132,43 +153,63 @@ const buildDecimalsQuestion = () => {
   const op = randomChoice(['+', '-', '×'])
 
   if (op === '+') {
-    return withDecimalAnswer('decimals', `${a.toFixed(1)} + ${b.toFixed(1)}`, a + b, 2)
+    const value = a + b
+    return withDecimalAnswer(
+      'decimals',
+      `${a.toFixed(1)} + ${b.toFixed(1)}`,
+      value,
+      getAdaptiveDecimalPlaces(value),
+    )
   }
   if (op === '-') {
-    return withDecimalAnswer('decimals', `${a.toFixed(1)} - ${b.toFixed(1)}`, a - b, 2)
+    const value = a - b
+    return withDecimalAnswer(
+      'decimals',
+      `${a.toFixed(1)} - ${b.toFixed(1)}`,
+      value,
+      getAdaptiveDecimalPlaces(value),
+    )
   }
-  return withDecimalAnswer('decimals', `${a.toFixed(1)} × ${b.toFixed(1)}`, a * b, 2)
+  const value = a * b
+  return withDecimalAnswer(
+    'decimals',
+    `${a.toFixed(1)} × ${b.toFixed(1)}`,
+    value,
+    getAdaptiveDecimalPlaces(value),
+  )
 }
 
 const buildProbabilityDivisionQuestion = () => {
-  const decimalPlaces = randomChoice([1, 2])
   const style = randomChoice(['dice', 'cards', 'walk'])
 
   if (style === 'dice') {
     const power = randomChoice([2, 3])
+    const value = 1 / (6 ** power)
     return withDecimalAnswer(
       'probability-division',
-      `Given 1/6^${power}, write as decimal to exactly ${decimalPlaces} digit${decimalPlaces === 1 ? '' : 's'}.`,
-      1 / (6 ** power),
-      decimalPlaces,
+      `1/6^${power}`,
+      value,
+      getAdaptiveDecimalPlaces(value),
     )
   }
 
   if (style === 'cards') {
+    const value = 1 / 52
     return withDecimalAnswer(
       'probability-division',
-      `Given 1/52, write as decimal to exactly ${decimalPlaces} digit${decimalPlaces === 1 ? '' : 's'}.`,
-      1 / 52,
-      decimalPlaces,
+      '1/52',
+      value,
+      getAdaptiveDecimalPlaces(value),
     )
   }
 
   const steps = randomChoice([4, 5, 6])
+  const value = 1 / (2 ** steps)
   return withDecimalAnswer(
     'probability-division',
-    `Given 1/2^${steps}, write as decimal to exactly ${decimalPlaces} digit${decimalPlaces === 1 ? '' : 's'}.`,
-    1 / (2 ** steps),
-    decimalPlaces,
+    `1/2^${steps}`,
+    value,
+    getAdaptiveDecimalPlaces(value),
   )
 }
 

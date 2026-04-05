@@ -165,6 +165,7 @@ function MentalMathChallenge() {
 
   if (status === 'running' && currentQuestion && activeSettings) {
     const formatMeta = getFormatMeta(currentQuestion)
+    const topicLabel = currentQuestion.topic.replaceAll('-', ' ').toUpperCase()
 
     return (
       <section className="page mental-page">
@@ -192,14 +193,13 @@ function MentalMathChallenge() {
         </div>
 
         <article className="question-card">
-          <div className="question-head">
-            <p className="question-topic">{currentQuestion.topic}</p>
+          <p className="question-title">
+            {topicLabel}{' '}
             <span className={`format-badge ${formatMeta.className}`}>
-              Format: {formatMeta.text}
+              (Format: {formatMeta.text})
             </span>
-          </div>
+          </p>
           <h3>{currentQuestion.prompt}</h3>
-          <p className="hint-box">Format: {currentQuestion.inputHint}</p>
           <form
             className="question-form"
             onSubmit={(event) => {

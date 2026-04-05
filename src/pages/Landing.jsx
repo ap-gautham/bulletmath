@@ -14,7 +14,7 @@ const tracks = [
     href: '/probability',
   },
   {
-    title: 'Coding Practice (Python + Pandas)',
+    title: 'Coding Practice (Python)',
     body: 'Solve focused coding tasks on sorting, regex, and pandas with in-browser execution.',
     cta: 'Open Coding Lab',
     href: '/coding',
