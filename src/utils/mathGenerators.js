@@ -18,6 +18,26 @@ const randomInt = (min, max) =>
 
 const randomChoice = (list) => list[Math.floor(Math.random() * list.length)]
 
+const toSuperscript = (value) => {
+  const digits = {
+    0: '⁰',
+    1: '¹',
+    2: '²',
+    3: '³',
+    4: '⁴',
+    5: '⁵',
+    6: '⁶',
+    7: '⁷',
+    8: '⁸',
+    9: '⁹',
+  }
+
+  return String(value)
+    .split('')
+    .map((char) => digits[char] ?? char)
+    .join('')
+}
+
 const fractionDenominators = [
   ...Array.from({ length: 14 }, (_, index) => index + 2),
   4,
@@ -307,10 +327,10 @@ const buildProbabilityDivisionQuestion = () => {
   if (style === 'dice') {
     const power = randomChoice([1, 2, 3])
     const index = randomChoice([2, 3, 4, 5, 6])
-    const value = index / (6 ** power)
+    const value = (index / 6) ** power
     return withDecimalAnswer(
       'probability-division',
-      `${index}/6^${power}`,
+      `(${index}/6)${toSuperscript(power)}`,
       value,
       getAdaptiveDecimalPlaces(value),
     )
@@ -319,10 +339,10 @@ const buildProbabilityDivisionQuestion = () => {
   const denominator = randomChoice([52, 13])
   const numerator = randomInt(1, 52)
   const power = randomChoice([1, 2])
-  const value = numerator / (denominator ** power)
+  const value = (numerator / denominator) ** power
   return withDecimalAnswer(
     'probability-division',
-    `${numerator}/${denominator}^${power}`,
+    `(${numerator}/${denominator})${toSuperscript(power)}`,
     value,
     getAdaptiveDecimalPlaces(value),
   )
