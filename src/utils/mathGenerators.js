@@ -51,6 +51,40 @@ const getAdaptiveDecimalPlaces = (value) => {
   return Math.min(firstNonZeroIndex + 1, 6)
 }
 
+const defaultFractionMix = {
+  simpleShare: 0.35,
+  complexShare: 0.35,
+  additionShare: 0.15,
+  divisionShare: 0.15,
+}
+
+const resolveFractionMix = (profile) => {
+  const raw = profile?.fractionMix || defaultFractionMix
+  const additionShare = 0.15
+  const divisionShare = 0.15
+  const remaining = 1 - additionShare - divisionShare
+
+  const safeSimple = Math.max(0, Number(raw.simpleShare ?? defaultFractionMix.simpleShare))
+  const safeComplex = Math.max(0, Number(raw.complexShare ?? defaultFractionMix.complexShare))
+  const total = safeSimple + safeComplex
+
+  if (total <= 0) {
+    return {
+      additionShare,
+      divisionShare,
+      simpleShare: remaining / 2,
+      complexShare: remaining / 2,
+    }
+  }
+
+  return {
+    additionShare,
+    divisionShare,
+    simpleShare: (safeSimple / total) * remaining,
+    complexShare: (safeComplex / total) * remaining,
+  }
+}
+
 const withIntegerAnswer = (topic, prompt, value) => ({
   topic,
   prompt,
@@ -82,6 +116,11 @@ const withFractionAnswer = (topic, prompt, numerator, denominator) => {
     inputHint: 'Enter a simplified fraction only, in the form a/b.',
   }
 }
+
+const relabelQuestionTopic = (question, nextTopic) => ({
+  ...question,
+  topic: nextTopic,
+})
 
 const buildAdditionQuestion = (profile) => {
   const a = randomInt(profile.minInt, profile.maxInt)
@@ -147,22 +186,17 @@ const buildFractionDecimalComplex = () => {
   )
 }
 
-const buildFractionOpsQuestion = (topic) => {
+const buildFractionAdditionQuestion = (topic) => {
   const d1 = randomChoice([2, 3, 4, 5, 6, 8, 10, 12])
   const d2 = randomChoice([2, 3, 4, 5, 6, 8, 10, 12])
   const n1 = randomInt(1, d1 - 1)
   const n2 = randomInt(1, d2 - 1)
-  const op = randomChoice(['+', '-', '×'])
-
-  if (op === '×') {
-    return withFractionAnswer(topic, `${n1}/${d1} × ${n2}/${d2}`, n1 * n2, d1 * d2)
-  }
 
   const lcm = (d1 * d2) / gcd(d1, d2)
   const left = (lcm / d1) * n1
   const right = (lcm / d2) * n2
-  const num = op === '+' ? left + right : left - right
-  return withFractionAnswer(topic, `${n1}/${d1} ${op} ${n2}/${d2}`, num, lcm)
+  const num = left + right
+  return withFractionAnswer(topic, `${n1}/${d1} + ${n2}/${d2}`, num, lcm)
 }
 
 const factorial = (n) => {
@@ -194,24 +228,44 @@ const buildFractionDivisionQuestion = (topic, denominatorPool) => {
   )
 }
 
-const buildSimpleFractionQuestion = () => {
-  if (Math.random() < 0.7) {
+const buildFractionFromMix = (profile) => {
+  const mix = resolveFractionMix(profile)
+  const roll = Math.random()
+
+  if (roll < mix.divisionShare) {
+    const useComplex = Math.random() < (mix.complexShare / (mix.simpleShare + mix.complexShare || 1))
+    return buildFractionDivisionQuestion(
+      useComplex ? 'complex-fraction' : 'simple-fraction',
+      useComplex ? fractionDenominators : [2, 3, 4, 5, 6, 8],
+    )
+  }
+
+  if (roll < mix.divisionShare + mix.additionShare) {
+    const useComplex = Math.random() < (mix.complexShare / (mix.simpleShare + mix.complexShare || 1))
+    return buildFractionAdditionQuestion(useComplex ? 'complex-fraction' : 'simple-fraction')
+  }
+
+  if (roll < mix.divisionShare + mix.additionShare + mix.simpleShare) {
     return buildFractionDecimalSimple()
   }
 
-  return buildFractionDivisionQuestion('simple-fraction', [2, 3, 4, 5, 6, 8])
+  return buildFractionDecimalComplex()
 }
 
-const buildComplexFractionQuestion = () => {
-  const roll = Math.random()
-  if (roll < 0.45) {
-    return buildFractionDecimalComplex()
+const buildSimpleFractionMixedQuestion = (profile) => {
+  const question = buildFractionFromMix(profile)
+  if (question.topic === 'complex-fraction' && profile?.fractionMix?.complexShare <= 0) {
+    return relabelQuestionTopic(question, 'simple-fraction')
   }
-  if (roll < 0.75) {
-    return buildFractionOpsQuestion('complex-fraction')
-  }
+  return question
+}
 
-  return buildFractionDivisionQuestion('complex-fraction', fractionDenominators)
+const buildComplexFractionMixedQuestion = (profile) => {
+  const question = buildFractionFromMix(profile)
+  if (question.topic === 'simple-fraction' && profile?.fractionMix?.simpleShare <= 0) {
+    return relabelQuestionTopic(question, 'complex-fraction')
+  }
+  return question
 }
 
 const buildDecimalsQuestion = () => {
@@ -285,8 +339,8 @@ const topicBuilders = {
   subtraction: buildSubtractionQuestion,
   multiplication: buildMultiplicationQuestion,
   division: buildDivisionQuestion,
-  'simple-fraction': buildSimpleFractionQuestion,
-  'complex-fraction': buildComplexFractionQuestion,
+  'simple-fraction': buildSimpleFractionMixedQuestion,
+  'complex-fraction': buildComplexFractionMixedQuestion,
   combination: buildCombinationQuestion,
   decimals: buildDecimalsQuestion,
   'probability-division': buildProbabilityDivisionQuestion,
@@ -304,13 +358,17 @@ export const levelConfigs = {
     minDivQuotient: 2,
     maxDivQuotient: 40,
     divisionExactRate: 0.95,
+    fractionMix: {
+      simpleShare: 0.7,
+      complexShare: 0,
+      additionShare: 0.15,
+      divisionShare: 0.15,
+    },
     topics: [
       'addition',
       'subtraction',
       'multiplication',
       'division',
-      'simple-fraction',
-      'simple-fraction',
       'simple-fraction',
       'complex-fraction',
     ],
@@ -326,14 +384,18 @@ export const levelConfigs = {
     minDivQuotient: 6,
     maxDivQuotient: 120,
     divisionExactRate: 0.75,
+    fractionMix: {
+      simpleShare: 0.5,
+      complexShare: 0.2,
+      additionShare: 0.15,
+      divisionShare: 0.15,
+    },
     topics: [
       'addition',
       'subtraction',
       'multiplication',
       'division',
       'simple-fraction',
-      'simple-fraction',
-      'complex-fraction',
       'complex-fraction',
       'combination',
       'probability-division',
@@ -350,14 +412,18 @@ export const levelConfigs = {
     minDivQuotient: 10,
     maxDivQuotient: 180,
     divisionExactRate: 0.5,
+    fractionMix: {
+      simpleShare: 0.2,
+      complexShare: 0.5,
+      additionShare: 0.15,
+      divisionShare: 0.15,
+    },
     topics: [
       'addition',
       'subtraction',
       'multiplication',
       'division',
       'simple-fraction',
-      'complex-fraction',
-      'complex-fraction',
       'complex-fraction',
       'combination',
       'decimals',
@@ -375,15 +441,18 @@ export const levelConfigs = {
     minDivQuotient: 15,
     maxDivQuotient: 260,
     divisionExactRate: 0.5,
+    fractionMix: {
+      simpleShare: 0,
+      complexShare: 0.7,
+      additionShare: 0.15,
+      divisionShare: 0.15,
+    },
     topics: [
       'addition',
       'subtraction',
       'multiplication',
       'division',
       'simple-fraction',
-      'complex-fraction',
-      'complex-fraction',
-      'complex-fraction',
       'complex-fraction',
       'combination',
       'decimals',

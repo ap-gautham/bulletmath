@@ -50,6 +50,45 @@ const initialCustomSettings = {
 const resolveCustomTopics = (customSettings) =>
   (customSettings.topics.length > 0 ? customSettings.topics : ['addition', 'multiplication'])
 
+const resolveCustomFractionMix = (customSettings) => {
+  const hasSimple = customSettings.topics.includes('simple-fraction')
+  const hasComplex = customSettings.topics.includes('complex-fraction')
+
+  if (hasSimple && hasComplex) {
+    return {
+      simpleShare: 0.35,
+      complexShare: 0.35,
+      additionShare: 0.15,
+      divisionShare: 0.15,
+    }
+  }
+
+  if (hasSimple) {
+    return {
+      simpleShare: 0.7,
+      complexShare: 0,
+      additionShare: 0.15,
+      divisionShare: 0.15,
+    }
+  }
+
+  if (hasComplex) {
+    return {
+      simpleShare: 0,
+      complexShare: 0.7,
+      additionShare: 0.15,
+      divisionShare: 0.15,
+    }
+  }
+
+  return {
+    simpleShare: 0.35,
+    complexShare: 0.35,
+    additionShare: 0.15,
+    divisionShare: 0.15,
+  }
+}
+
 const buildChallengeSettings = (mode, preset, customSettings) => {
   if (mode === 'preset') {
     return {
@@ -67,6 +106,7 @@ const buildChallengeSettings = (mode, preset, customSettings) => {
     timeLimit: Math.max(30, Number(customSettings.timeLimit)),
     questionCount: Math.max(1, Number(customSettings.questionCount || 10)),
     sessionType: customSettings.sessionType,
+    fractionMix: resolveCustomFractionMix(customSettings),
     topics: topicPool,
   }
 }
